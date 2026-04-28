@@ -11,18 +11,22 @@ export default async function DashboardPage() {
   const [
     { data: weightLogs },
     { data: postureLogs },
-    { data: workoutSets },
+    { data: fichaWeek },
     { data: supplementLogs },
     { data: postureAll },
-    { data: workoutAll },
+    { data: fichaAll },
     { data: supplementAll },
   ] = await Promise.all([
     supabase.from('weight_logs').select('*').order('logged_at', { ascending: true }).limit(120),
+    // postura: weekly for card
     supabase.from('posture_checklist').select('logged_at').gte('logged_at', weekStart),
-    supabase.from('workout_sets').select('logged_at').gte('logged_at', weekStart),
+    // academia: weekly ficha completions for card
+    supabase.from('ficha_completions').select('completed_at').gte('completed_at', weekStart),
+    // supplements: weekly for card
     supabase.from('supplement_weekly').select('logged_at').gte('logged_at', weekStart),
+    // full history for charts
     supabase.from('posture_checklist').select('logged_at').order('logged_at', { ascending: true }),
-    supabase.from('workout_sets').select('logged_at').order('logged_at', { ascending: true }),
+    supabase.from('ficha_completions').select('completed_at').order('completed_at', { ascending: true }),
     supabase.from('supplement_weekly').select('logged_at').order('logged_at', { ascending: true }),
   ])
 
@@ -30,11 +34,11 @@ export default async function DashboardPage() {
   const latest = logs.at(-1) ?? null
 
   const postureDates = [...new Set((postureLogs ?? []).map((r) => r.logged_at as string))]
-  const workoutDates = [...new Set((workoutSets ?? []).map((r) => r.logged_at as string))]
+  const workoutDates = [...new Set((fichaWeek ?? []).map((r) => r.completed_at as string))]
   const supplementDates = [...new Set((supplementLogs ?? []).map((r) => r.logged_at as string))]
 
   const postureAllDates = [...new Set((postureAll ?? []).map((r) => r.logged_at as string))]
-  const workoutAllDates = [...new Set((workoutAll ?? []).map((r) => r.logged_at as string))]
+  const workoutAllDates = [...new Set((fichaAll ?? []).map((r) => r.completed_at as string))]
   const supplementAllDates = [...new Set((supplementAll ?? []).map((r) => r.logged_at as string))]
 
   return (
