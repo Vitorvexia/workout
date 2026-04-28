@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { WeightLog, DayScore, Streaks, CheckSemanal } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { AlertTriangle, Flame, TrendingUp, TrendingDown, Minus, CheckCircle2, Circle } from 'lucide-react'
+import { Flame, TrendingUp, TrendingDown, Minus, CheckCircle2, Circle } from 'lucide-react'
 
 const LS_KEY = 'workout_target_weight'
 const DEFAULT_TARGET = 68
@@ -31,7 +31,6 @@ type Props = {
   dayScore: DayScore
   streaks: Streaks
   checkSemanal: CheckSemanal
-  alertas: string[]
   todayStatus: TodayStatus
   scoreHistory: { date: string; score: number }[]
 }
@@ -94,7 +93,6 @@ export function DashboardClient({
   dayScore,
   streaks,
   checkSemanal,
-  alertas,
   todayStatus,
   scoreHistory,
 }: Props) {
@@ -126,22 +124,6 @@ export function DashboardClient({
 
   return (
     <div className="space-y-4">
-      {/* Alertas */}
-      {alertas.length > 0 && (
-        <Card className="border-yellow-500/30 bg-yellow-500/5">
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                {alertas.map((a, i) => (
-                  <p key={i} className="text-sm text-yellow-200/80">{a}</p>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Resumo do Dia — merged card */}
       <Card>
         <CardHeader className="pb-3">

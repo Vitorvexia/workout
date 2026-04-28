@@ -2,6 +2,7 @@ import { supabaseServer as supabase } from '@/lib/supabase-server'
 import { DashboardClient } from '@/components/dashboard/dashboard-client'
 import { WeeklyRoutines } from '@/components/dashboard/weekly-routines'
 import { format, startOfWeek, subDays } from 'date-fns'
+// subDays kept for ninetyDaysAgo calculation
 import { computeDayScore, computeStreaks, computeCheckSemanal } from '@/lib/score'
 import { WeightLog, MealCompletion, SupplementWeekly, FichaCompletion, MANDATORY_SUPS } from '@/lib/types'
 
@@ -115,22 +116,6 @@ export default async function DashboardPage() {
   const workoutAllDates = fichaAll.map((r) => r.completed_at)
   const supplementAllDates = supplementAll.map((r) => r.logged_at)
 
-  // --- alertas ---
-  const lastWeight = logs.length >= 2 ? logs[logs.length - 1] : null
-  const weekAgoWeight = lastWeight
-    ? logs.find((w) => w.logged_at <= format(subDays(new Date(), 7), 'yyyy-MM-dd'))
-    : null
-  const pesoEstagnado =
-    lastWeight && weekAgoWeight
-      ? Number(lastWeight.weight_kg) <= Number(weekAgoWeight.weight_kg)
-      : false
-
-  const alertas: string[] = []
-  if (todayMealCount < 4) alertas.push('Você está comendo pouco hoje.')
-  if (!todaySup.hipercalorico) alertas.push('Hipercalórico não registrado.')
-  if (pesoEstagnado) alertas.push('Seu peso não subiu essa semana. Aumente calorias.')
-  if (!todayTreino) alertas.push('Treino ainda não registrado.')
-
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
@@ -143,7 +128,6 @@ export default async function DashboardPage() {
         dayScore={dayScore}
         streaks={streaks}
         checkSemanal={checkSemanal}
-        alertas={alertas}
         scoreHistory={scoreHistory}
         todayStatus={{
           treino: todayTreino,

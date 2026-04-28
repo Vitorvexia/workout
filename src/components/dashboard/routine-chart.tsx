@@ -26,8 +26,21 @@ function countInWeek(dates: string[], weekStart: Date): number {
 
 export function RoutineChart({ workoutDates, supplementDates }: Props) {
   const today = new Date()
-  const weeks = Array.from({ length: 12 }, (_, i) =>
-    startOfWeek(subWeeks(today, 11 - i), { weekStartsOn: 1 })
+
+  // Start from the earliest week that has any data, or current week if none
+  const allDates = [...workoutDates, ...supplementDates]
+  const earliest = allDates.length > 0
+    ? allDates.reduce((a, b) => (a < b ? a : b))
+    : format(today, 'yyyy-MM-dd')
+  const earliestWeek = startOfWeek(new Date(earliest + 'T12:00:00'), { weekStartsOn: 1 })
+  const currentWeek = startOfWeek(today, { weekStartsOn: 1 })
+
+  // Build weeks from earliest to current, max 12
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000
+  const totalWeeks = Math.min(12, Math.round((currentWeek.getTime() - earliestWeek.getTime()) / msPerWeek) + 1)
+
+  const weeks = Array.from({ length: totalWeeks }, (_, i) =>
+    startOfWeek(subWeeks(currentWeek, totalWeeks - 1 - i), { weekStartsOn: 1 })
   )
 
   const data = weeks.map((w) => ({
