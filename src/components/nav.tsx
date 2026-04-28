@@ -9,7 +9,7 @@ const links = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/treinos', label: 'Treinos', icon: Dumbbell },
   { href: '/fotos', label: 'Fotos', icon: Camera },
-  { href: '/postura', label: 'Postura', icon: Activity },
+  { href: '/postura', label: 'Ficha de Postura', icon: Activity },
   { href: '/suplementos', label: 'Suplementos', icon: Pill },
 ]
 
