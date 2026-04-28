@@ -11,31 +11,31 @@ const EXERCISES = [
   {
     num: 1,
     name: 'Extensão de Coluna na Cadeira',
-    summary: 'Mobiliza a coluna torácica usando encosto da cadeira.',
+    summary: '1 série · 5 repetições — mobiliza coluna torácica.',
     description: 'Utilize uma cadeira firme e sem rodinhas. Sente-se, coloque as mãos na nuca e leve o tronco para trás sobre o encosto da cadeira, abrindo bem os cotovelos para expandir a caixa torácica. Vá até o seu limite sem forçar excessivamente e retorne devagar.',
   },
   {
     num: 2,
     name: 'Alongamento de Peitoral no Batente da Porta',
-    summary: 'Abre a postura "fechada", alonga músculos que puxam ombros para frente.',
+    summary: '1 série · 2 repetições cada lado — abre postura fechada.',
     description: 'Posicione o braço esticado ou o antebraço no batente da porta ou em uma parede. Gire o corpo para o lado oposto até sentir o peito alongar. Sustente a posição por 20 segundos de cada lado.',
   },
   {
     num: 3,
     name: 'Fortalecimento "W para Y"',
-    summary: 'Fortalece musculatura das costas. Pode ser feito no chão.',
+    summary: '1 série · 12 repetições — fortalece musculatura das costas.',
     description: 'Deite-se de barriga para baixo. Saia da posição de "W" (cotovelos dobrados) e estique os braços à frente formando um "Y". Variação: você também pode apenas elevar os braços lateralmente com os polegares apontados para cima, o que ajuda a queimar e fortalecer a musculatura das costas.',
   },
   {
     num: 4,
     name: 'Mobilidade com Cabo de Vassoura ou Toalha',
-    summary: 'Abre ombros e reequilibra musculatura posterior.',
+    summary: '2 séries · 10 movimentos — abre ombros e reequilibra posterior.',
     description: 'Segure um cabo de vassoura ou uma toalha esticada atrás das costas. Faça movimentos de subida e descida ou leve o bastão para trás, rodando os ombros e estufando o peito. Este movimento ajuda a reequilibrar a musculatura posterior que costuma estar fraca e alongada demais.',
   },
   {
     num: 5,
     name: 'Extensão de Coluna em Prono (Posição de "Cobra")',
-    summary: 'Trabalha o inverso da corcunda, alonga região anterior do corpo.',
+    summary: '2 séries · 10 repetições — inverte a corcunda, alonga anterior.',
     description: 'Nível 1: Deitado de barriga para baixo, apoie apenas os antebraços no chão e olhe para cima. Nível 2: Se conseguir avançar, estique os braços completamente, trazendo as mãos mais próximas ao corpo para aumentar a extensão das costas.',
   },
 ]
