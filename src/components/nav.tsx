@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 
 const links = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/treinos', label: 'Treinos', icon: Dumbbell },
+  { href: '/treinos', label: 'Ficha de Treino', icon: Dumbbell },
   { href: '/fotos', label: 'Fotos', icon: Camera },
   { href: '/postura', label: 'Ficha de Postura', icon: Activity },
   { href: '/suplementos', label: 'Suplementos', icon: Pill },
