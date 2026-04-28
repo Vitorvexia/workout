@@ -9,6 +9,10 @@ import { WeightSlider } from './weight-slider'
 import { Pencil, Check, X, AlertCircle } from 'lucide-react'
 
 const INITIAL_WEIGHT = 58
+// Slider lower bound: 5kg below current, minimum 40kg
+function sliderMin(current: number) {
+  return Math.max(40, Math.floor(current - 5))
+}
 
 type Props = {
   latest: WeightLog | null
@@ -124,7 +128,7 @@ export function WeightCard({ latest, target, onAdded, onTargetChange }: Props) {
         </div>
 
         <WeightSlider
-          min={INITIAL_WEIGHT}
+          min={sliderMin(current)}
           max={target}
           current={current}
           onLog={handleSliderLog}

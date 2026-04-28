@@ -82,7 +82,7 @@ export function WeightSlider({ min, max, current, onLog }: Props) {
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-xs text-muted-foreground">
-        <span>{min}kg (início)</span>
+        <span>{min}kg</span>
         <span className={`font-semibold ${dragging ? 'text-foreground' : 'text-foreground'}`}>
           {displayWeight.toFixed(1)}kg {dragging ? '(arrastando...)' : saving ? '(salvando...)' : 'atual'}
         </span>
@@ -120,7 +120,7 @@ export function WeightSlider({ min, max, current, onLog }: Props) {
       </div>
 
       <div className="flex justify-between text-xs text-muted-foreground">
-        <span>+{(displayWeight - min).toFixed(1)}kg ganhos</span>
+        <span>{(displayWeight - min).toFixed(1)}kg desde {min}kg</span>
         <span>{displayProgress.toFixed(0)}% da meta</span>
         <span>{Math.max(0, max - displayWeight).toFixed(1)}kg restantes</span>
       </div>
