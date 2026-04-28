@@ -33,18 +33,6 @@ export type ProgressPhoto = {
   created_at: string
 }
 
-export type PostureChecklist = {
-  id: string
-  logged_at: string
-  exercise_1: boolean
-  exercise_2: boolean
-  exercise_3: boolean
-  exercise_4: boolean
-  exercise_5: boolean
-  pain_level: number
-  created_at: string
-}
-
 export type SupplementKey =
   | 'creatina'
   | 'whey'
@@ -103,7 +91,6 @@ export type DayScore = {
     hipercalorico_manha: boolean
     hipercalorico_noite: boolean
   }
-  postura: boolean
 }
 
 export type Streaks = {
@@ -120,7 +107,6 @@ export type CheckSemanal = {
   refeicoes: number
   treinos: number
   suplementos: number
-  postura: number
   resultado: 'Excelente' | 'Boa' | 'Fraca'
   scoreMedia: number
 }

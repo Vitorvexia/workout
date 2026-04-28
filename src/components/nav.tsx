@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Camera, Dumbbell, Activity, Utensils } from 'lucide-react'
+import { LayoutDashboard, Camera, Dumbbell, Utensils } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const links = [
@@ -10,7 +10,6 @@ const links = [
   { href: '/alimentacao', label: 'Alimentação & Suplementos', icon: Utensils },
   { href: '/treinos', label: 'Ficha de Treino', icon: Dumbbell },
   { href: '/fotos', label: 'Fotos', icon: Camera },
-  { href: '/postura', label: 'Ficha de Postura', icon: Activity },
 ]
 
 export function Nav() {

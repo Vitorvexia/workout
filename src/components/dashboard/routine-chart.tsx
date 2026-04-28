@@ -14,7 +14,6 @@ import { startOfWeek, endOfWeek, subWeeks, format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 type Props = {
-  postureDates: string[]
   workoutDates: string[]
   supplementDates: string[]
 }
@@ -25,24 +24,19 @@ function countInWeek(dates: string[], weekStart: Date): number {
   return [...new Set(dates)].filter((d) => d >= start && d <= end).length
 }
 
-export function RoutineChart({ postureDates, workoutDates, supplementDates }: Props) {
-  // Always show last 12 weeks — regardless of data sparsity
+export function RoutineChart({ workoutDates, supplementDates }: Props) {
   const today = new Date()
   const weeks = Array.from({ length: 12 }, (_, i) =>
     startOfWeek(subWeeks(today, 11 - i), { weekStartsOn: 1 })
   )
 
   const data = weeks.map((w) => ({
-    semana: format(w, "dd/MM", { locale: ptBR }),
-    Postura: countInWeek(postureDates, w),
+    semana: format(w, 'dd/MM', { locale: ptBR }),
     Academia: countInWeek(workoutDates, w),
     Suplementos: countInWeek(supplementDates, w),
   }))
 
-  const hasAnyData =
-    postureDates.length > 0 ||
-    workoutDates.length > 0 ||
-    supplementDates.length > 0
+  const hasAnyData = workoutDates.length > 0 || supplementDates.length > 0
 
   return (
     <Card>
@@ -84,14 +78,6 @@ export function RoutineChart({ postureDates, workoutDates, supplementDates }: Pr
                 }}
               />
               <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
-              <Line
-                type="monotone"
-                dataKey="Postura"
-                stroke="#60a5fa"
-                strokeWidth={2}
-                dot={{ r: 2 }}
-                activeDot={{ r: 4 }}
-              />
               <Line
                 type="monotone"
                 dataKey="Academia"

@@ -23,7 +23,6 @@ type TodayStatus = {
     hipercalorico_manha: boolean
     hipercalorico_noite: boolean
   }
-  postura: boolean
 }
 
 type Props = {
@@ -190,7 +189,6 @@ export function DashboardClient({
               <StatusRow ok={todayStatus.suplementos.hipercalorico_manha} label="Hipercalórico manhã" />
               <StatusRow ok={todayStatus.suplementos.whey} label="Whey" />
               <StatusRow ok={todayStatus.suplementos.hipercalorico_noite} label="Hipercalórico noite" />
-              <StatusRow ok={todayStatus.postura} label="Postura" value={todayStatus.postura ? 'Feita' : 'Pendente'} />
             </div>
           </div>
         </CardContent>
@@ -279,12 +277,6 @@ export function DashboardClient({
               <p className="text-xs text-muted-foreground">Treinos</p>
               <p className="text-sm font-semibold">{checkSemanal.treinos}/7</p>
               <Progress value={(checkSemanal.treinos / 7) * 100} className="h-1 mt-1" />
-            </div>
-
-            <div className="space-y-0.5">
-              <p className="text-xs text-muted-foreground">Postura</p>
-              <p className="text-sm font-semibold">{checkSemanal.postura}/7</p>
-              <Progress value={(checkSemanal.postura / 7) * 100} className="h-1 mt-1" />
             </div>
           </div>
 

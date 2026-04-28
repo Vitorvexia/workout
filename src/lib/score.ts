@@ -2,18 +2,16 @@ import { DayScore, Streaks, CheckSemanal, WeightLog } from './types'
 
 type DailyData = {
   date: string
-  mealCount: number        // 0-6
+  mealCount: number  // 0-6
   treino: boolean
-  supCount: number         // mandatory sups done: creatina+hipercalorico_manha+whey+hipercalorico_noite (0-4)
-  postura: boolean
+  supCount: number   // mandatory sups: creatina+hipercalorico_manha+whey+hipercalorico_noite (0-4)
 }
 
 export function computeDayScore(d: Omit<DailyData, 'date'>): DayScore {
-  const alimentacaoPts = (d.mealCount / 6) * 35
-  const supPts = (d.supCount / 4) * 25
-  const treinoPts = d.treino ? 25 : 0
-  const posturaPts = d.postura ? 15 : 0
-  const score = Math.round(alimentacaoPts + supPts + treinoPts + posturaPts)
+  const alimentacaoPts = (d.mealCount / 6) * 40
+  const supPts = (d.supCount / 4) * 30
+  const treinoPts = d.treino ? 30 : 0
+  const score = Math.round(alimentacaoPts + supPts + treinoPts)
 
   let label: DayScore['label']
   if (score >= 90) label = 'Dia perfeito'
@@ -33,7 +31,6 @@ export function computeDayScore(d: Omit<DailyData, 'date'>): DayScore {
       hipercalorico_manha: false,
       hipercalorico_noite: false,
     },
-    postura: d.postura,
   }
 }
 
@@ -53,7 +50,7 @@ export function computeStreaks(history: DailyData[]): Streaks {
     alimentacao: streak((d) => d.mealCount === 6),
     treino: streak((d) => d.treino),
     suplementos: streak((d) => d.supCount >= 3),
-    geral: streak((d) => d.mealCount === 6 && d.treino && d.supCount >= 3 && d.postura),
+    geral: streak((d) => d.mealCount === 6 && d.treino && d.supCount >= 3),
   }
 }
 
@@ -72,9 +69,7 @@ export function computeCheckSemanal(
   const pesoAtual = weekWeights.length > 0 ? Number(weekWeights[weekWeights.length - 1].weight_kg) : null
   const difPeso = pesoInicial !== null && pesoAtual !== null ? +(pesoAtual - pesoInicial).toFixed(1) : null
 
-  const scores = weekDays.map((d) =>
-    computeDayScore(d).score
-  )
+  const scores = weekDays.map((d) => computeDayScore(d).score)
   const scoreMedia = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0
 
   let resultado: CheckSemanal['resultado']
@@ -89,7 +84,6 @@ export function computeCheckSemanal(
     refeicoes: weekDays.reduce((a, d) => a + d.mealCount, 0),
     treinos: weekDays.filter((d) => d.treino).length,
     suplementos: weekDays.filter((d) => d.supCount >= 2).length,
-    postura: weekDays.filter((d) => d.postura).length,
     resultado,
     scoreMedia,
   }

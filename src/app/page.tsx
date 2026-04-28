@@ -3,7 +3,7 @@ import { DashboardClient } from '@/components/dashboard/dashboard-client'
 import { WeeklyRoutines } from '@/components/dashboard/weekly-routines'
 import { format, startOfWeek, subDays } from 'date-fns'
 import { computeDayScore, computeStreaks, computeCheckSemanal } from '@/lib/score'
-import { WeightLog, MealCompletion, PostureChecklist, SupplementWeekly, FichaCompletion, MANDATORY_SUPS } from '@/lib/types'
+import { WeightLog, MealCompletion, SupplementWeekly, FichaCompletion, MANDATORY_SUPS } from '@/lib/types'
 
 export const revalidate = 0
 
@@ -25,29 +25,23 @@ export default async function DashboardPage() {
 
   const [
     weightLogs,
-    postureLogs,
     fichaWeek,
     supplementLogs,
-    postureAll,
     fichaAll,
     supplementAll,
     todayMeals,
     mealHistory,
     todaySupplements,
-    todayPosture,
     todayFicha,
   ] = await Promise.all([
     safeQuery<WeightLog>(supabase.from('weight_logs').select('*').order('logged_at', { ascending: true }).limit(120)),
-    safeQuery<{ logged_at: string }>(supabase.from('posture_checklist').select('logged_at').gte('logged_at', weekStart)),
     safeQuery<{ completed_at: string }>(supabase.from('ficha_completions').select('completed_at').gte('completed_at', weekStart)),
     safeQuery<{ logged_at: string }>(supabase.from('supplement_weekly').select('logged_at').gte('logged_at', weekStart)),
-    safeQuery<{ logged_at: string }>(supabase.from('posture_checklist').select('logged_at').order('logged_at', { ascending: true })),
     safeQuery<{ completed_at: string }>(supabase.from('ficha_completions').select('completed_at').order('completed_at', { ascending: true })),
     safeQuery<{ logged_at: string }>(supabase.from('supplement_weekly').select('logged_at').order('logged_at', { ascending: true })),
     safeQuery<MealCompletion>(supabase.from('meal_completions').select('*').eq('date', today)),
     safeQuery<MealCompletion>(supabase.from('meal_completions').select('*').gte('date', ninetyDaysAgo)),
     safeQuery<SupplementWeekly>(supabase.from('supplement_weekly').select('*').eq('logged_at', today)),
-    safeQuery<PostureChecklist>(supabase.from('posture_checklist').select('*').eq('logged_at', today).limit(1)),
     safeQuery<FichaCompletion>(supabase.from('ficha_completions').select('*').eq('completed_at', today)),
   ])
 
@@ -57,7 +51,6 @@ export default async function DashboardPage() {
   // --- today status ---
   const todayMealCount = todayMeals.length
   const todayTreino = todayFicha.length > 0
-  const todayPosturaFeita = todayPosture.length > 0
 
   const hasSup = (key: string) => todaySupplements.some((s) => s.supplement === key && s.count > 0)
   const todaySup = {
@@ -67,23 +60,15 @@ export default async function DashboardPage() {
     hipercalorico_manha: hasSup('hipercalorico_manha'),
     hipercalorico_noite: hasSup('hipercalorico_noite'),
   }
-  // mandatory: creatina, hipercalorico_manha, whey, hipercalorico_noite
   const supCount = MANDATORY_SUPS.filter((k) => hasSup(k)).length
 
   // --- score today ---
-  const dayScore = computeDayScore({
-    mealCount: todayMealCount,
-    treino: todayTreino,
-    supCount,
-    postura: todayPosturaFeita,
-  })
+  const dayScore = computeDayScore({ mealCount: todayMealCount, treino: todayTreino, supCount })
   dayScore.suplementos = todaySup
 
-  // --- build 90-day history for streaks ---
-  const allPostureDates = new Set(postureAll.map((r) => r.logged_at))
+  // --- build 90-day history ---
   const allFichaDates = new Set(fichaAll.map((r) => r.completed_at))
 
-  // group supplement_weekly by date (need full history)
   const supHistoryRaw = await safeQuery<SupplementWeekly>(
     supabase.from('supplement_weekly').select('*').gte('logged_at', ninetyDaysAgo)
   )
@@ -94,15 +79,12 @@ export default async function DashboardPage() {
     supByDate.set(s.logged_at, arr)
   })
 
-  // group meal_completions by date
   const mealByDate = new Map<string, number>()
   mealHistory.forEach((m) => {
     mealByDate.set(m.date, (mealByDate.get(m.date) ?? 0) + 1)
   })
 
-  // build daily history array for streak/check computation
   const allDates = new Set([
-    ...Array.from(allPostureDates),
     ...Array.from(allFichaDates),
     ...Array.from(supByDate.keys()),
     ...Array.from(mealByDate.keys()),
@@ -110,31 +92,26 @@ export default async function DashboardPage() {
 
   const history = Array.from(allDates).map((date) => {
     const sups = supByDate.get(date) ?? []
-    // count only mandatory supplements
     const sc = MANDATORY_SUPS.filter((k) => sups.some((s) => s.supplement === k && s.count > 0)).length
     return {
       date,
       mealCount: mealByDate.get(date) ?? 0,
       treino: allFichaDates.has(date),
       supCount: sc,
-      postura: allPostureDates.has(date),
     }
   })
 
   const streaks = computeStreaks(history)
   const checkSemanal = computeCheckSemanal(history, logs, weekStart, weekEnd)
 
-  // --- score history for chart (last 30 days) ---
   const scoreHistory = history
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(-30)
     .map((d) => ({ date: d.date, score: computeDayScore(d).score }))
 
   // --- dates for weekly routines ---
-  const postureDates = [...new Set(postureLogs.map((r) => r.logged_at))]
   const workoutDates = [...new Set(fichaWeek.map((r) => r.completed_at))]
   const supplementDates = [...new Set(supplementLogs.map((r) => r.logged_at))]
-  const postureAllDates = postureAll.map((r) => r.logged_at)
   const workoutAllDates = fichaAll.map((r) => r.completed_at)
   const supplementAllDates = supplementAll.map((r) => r.logged_at)
 
@@ -172,14 +149,11 @@ export default async function DashboardPage() {
           treino: todayTreino,
           alimentacao: todayMealCount,
           suplementos: todaySup,
-          postura: todayPosturaFeita,
         }}
       />
       <WeeklyRoutines
-        postureDates={postureDates}
         workoutDates={workoutDates}
         supplementDates={supplementDates}
-        postureAllDates={postureAllDates}
         workoutAllDates={workoutAllDates}
         supplementAllDates={supplementAllDates}
       />
