@@ -26,14 +26,20 @@ export function WeeklyRoutines({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         logged_at: date,
-        exercise_1: true,
-        exercise_2: true,
-        exercise_3: true,
-        exercise_4: true,
-        exercise_5: true,
+        exercise_1: true, exercise_2: true,
+        exercise_3: true, exercise_4: true, exercise_5: true,
       }),
     })
     setChartPosture((prev) => [...new Set([...prev, date])].sort())
+  }
+
+  async function handlePosturaUnmark(date: string) {
+    await fetch('/api/postura', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ logged_at: date }),
+    })
+    setChartPosture((prev) => prev.filter((d) => d !== date))
   }
 
   async function handleSupplementToggle(date: string) {
@@ -45,6 +51,15 @@ export function WeeklyRoutines({
     setChartSupplement((prev) => [...new Set([...prev, date])].sort())
   }
 
+  async function handleSupplementUnmark(date: string) {
+    await fetch('/api/suplementos-day', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ logged_at: date }),
+    })
+    setChartSupplement((prev) => prev.filter((d) => d !== date))
+  }
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -52,16 +67,18 @@ export function WeeklyRoutines({
           title="Exercícios Posturais"
           loggedDates={postureDates}
           onToggle={handlePosturaToggle}
+          onUnmark={handlePosturaUnmark}
         />
-        {/* Academia is auto-tracked by ficha_completions — read-only */}
         <RoutineTracker
           title="Academia"
           loggedDates={workoutDates}
+          readOnly
         />
         <RoutineTracker
           title="Suplementos"
           loggedDates={supplementDates}
           onToggle={handleSupplementToggle}
+          onUnmark={handleSupplementUnmark}
         />
       </div>
       <RoutineChart

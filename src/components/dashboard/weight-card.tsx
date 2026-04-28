@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { WeightLog } from '@/lib/types'
 import { WeightSlider } from './weight-slider'
-import { Pencil, Check, X } from 'lucide-react'
+import { Pencil, Check, X, AlertCircle } from 'lucide-react'
 
 const INITIAL_WEIGHT = 58
 
@@ -20,6 +20,7 @@ type Props = {
 export function WeightCard({ latest, target, onAdded, onTargetChange }: Props) {
   const [weight, setWeight] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [editingTarget, setEditingTarget] = useState(false)
   const [targetInput, setTargetInput] = useState('')
 
@@ -34,24 +35,43 @@ export function WeightCard({ latest, target, onAdded, onTargetChange }: Props) {
   }
 
   async function logWeight(w: number): Promise<void> {
-    const res = await fetch('/api/peso', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ weight_kg: w }),
-    })
-    if (res.ok) {
+    setError(null)
+    try {
+      const res = await fetch('/api/peso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ weight_kg: w }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        setError(body.error ?? `Erro ${res.status}`)
+        return
+      }
       const newLog: WeightLog = await res.json()
       onAdded(newLog)
+    } catch {
+      setError('Sem conexão. Tente novamente.')
     }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!weight) return
+    const w = parseFloat(weight)
+    if (!weight || isNaN(w) || w < 30 || w > 200) {
+      setError('Peso inválido (entre 30 e 200kg).')
+      return
+    }
     setLoading(true)
-    await logWeight(parseFloat(weight))
+    await logWeight(w)
     setWeight('')
     setLoading(false)
+  }
+
+  // Sync: when slider saves, clear input and error
+  async function handleSliderLog(w: number): Promise<void> {
+    setWeight(String(w))
+    await logWeight(w)
+    setWeight('')
   }
 
   return (
@@ -107,22 +127,31 @@ export function WeightCard({ latest, target, onAdded, onTargetChange }: Props) {
           min={INITIAL_WEIGHT}
           max={target}
           current={current}
-          onLog={logWeight}
+          onLog={handleSliderLog}
         />
 
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
             type="number"
             step="0.1"
-            placeholder="Registrar peso"
+            min={30}
+            max={200}
+            placeholder="Ex: 59.5"
             value={weight}
-            onChange={(e) => setWeight(e.target.value)}
+            onChange={(e) => { setWeight(e.target.value); setError(null) }}
             className="h-8 text-sm"
           />
           <Button type="submit" size="sm" disabled={loading}>
             {loading ? '...' : 'Salvar'}
           </Button>
         </form>
+
+        {error && (
+          <div className="flex items-center gap-1.5 text-xs text-red-400">
+            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

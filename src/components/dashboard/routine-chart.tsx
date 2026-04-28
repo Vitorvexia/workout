@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts'
-import { startOfWeek, format, eachWeekOfInterval, parseISO, endOfWeek } from 'date-fns'
+import { startOfWeek, endOfWeek, subWeeks, format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 type Props = {
@@ -26,100 +26,91 @@ function countInWeek(dates: string[], weekStart: Date): number {
 }
 
 export function RoutineChart({ postureDates, workoutDates, supplementDates }: Props) {
-  // Find earliest date across all logs
-  const allDates = [...postureDates, ...workoutDates, ...supplementDates]
-  if (allDates.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-            Histórico de Rotina
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground text-center py-8">
-            Nenhum registro ainda
-          </p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const earliest = allDates.reduce((a, b) => (a < b ? a : b))
-  const weekStart = startOfWeek(parseISO(earliest), { weekStartsOn: 1 })
-  const weeks = eachWeekOfInterval(
-    { start: weekStart, end: new Date() },
-    { weekStartsOn: 1 }
+  // Always show last 12 weeks — regardless of data sparsity
+  const today = new Date()
+  const weeks = Array.from({ length: 12 }, (_, i) =>
+    startOfWeek(subWeeks(today, 11 - i), { weekStartsOn: 1 })
   )
 
   const data = weeks.map((w) => ({
-    week: format(w, 'dd/MM', { locale: ptBR }),
+    semana: format(w, "dd/MM", { locale: ptBR }),
     Postura: countInWeek(postureDates, w),
     Academia: countInWeek(workoutDates, w),
     Suplementos: countInWeek(supplementDates, w),
   }))
 
+  const hasAnyData =
+    postureDates.length > 0 ||
+    workoutDates.length > 0 ||
+    supplementDates.length > 0
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-          Histórico de Rotina
+          Histórico de Rotina — 12 semanas
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={data}>
-            <XAxis
-              dataKey="week"
-              tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              domain={[0, 7]}
-              ticks={[0, 1, 2, 3, 4, 5, 6, 7]}
-              tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
-              axisLine={false}
-              tickLine={false}
-              width={16}
-            />
-            <Tooltip
-              contentStyle={{
-                background: 'var(--card)',
-                border: '1px solid var(--border)',
-                borderRadius: '6px',
-                fontSize: 12,
-              }}
-            />
-            <Legend
-              wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="Postura"
-              stroke="#60a5fa"
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="Academia"
-              stroke="#34d399"
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="Suplementos"
-              stroke="#f472b6"
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        {!hasAnyData ? (
+          <div className="py-8 text-center space-y-1">
+            <p className="text-sm text-muted-foreground">Nenhum registro ainda.</p>
+            <p className="text-xs text-muted-foreground/50">O gráfico aparecerá conforme você usar o app.</p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={data}>
+              <XAxis
+                dataKey="semana"
+                tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                axisLine={false}
+                tickLine={false}
+                interval={1}
+              />
+              <YAxis
+                domain={[0, 7]}
+                ticks={[0, 2, 4, 6, 7]}
+                tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                axisLine={false}
+                tickLine={false}
+                width={16}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: 'var(--card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '6px',
+                  fontSize: 12,
+                }}
+              />
+              <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+              <Line
+                type="monotone"
+                dataKey="Postura"
+                stroke="#60a5fa"
+                strokeWidth={2}
+                dot={{ r: 2 }}
+                activeDot={{ r: 4 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="Academia"
+                stroke="#34d399"
+                strokeWidth={2}
+                dot={{ r: 2 }}
+                activeDot={{ r: 4 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="Suplementos"
+                stroke="#f472b6"
+                strokeWidth={2}
+                dot={{ r: 2 }}
+                activeDot={{ r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   )

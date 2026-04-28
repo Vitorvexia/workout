@@ -124,6 +124,12 @@ export default async function DashboardPage() {
   const streaks = computeStreaks(history)
   const checkSemanal = computeCheckSemanal(history, logs, weekStart, weekEnd)
 
+  // --- score history for chart (last 30 days) ---
+  const scoreHistory = history
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-30)
+    .map((d) => ({ date: d.date, score: computeDayScore(d).score }))
+
   // --- dates for weekly routines ---
   const postureDates = [...new Set(postureLogs.map((r) => r.logged_at))]
   const workoutDates = [...new Set(fichaWeek.map((r) => r.completed_at))]
@@ -161,6 +167,7 @@ export default async function DashboardPage() {
         streaks={streaks}
         checkSemanal={checkSemanal}
         alertas={alertas}
+        scoreHistory={scoreHistory}
         todayStatus={{
           treino: todayTreino,
           alimentacao: todayMealCount,

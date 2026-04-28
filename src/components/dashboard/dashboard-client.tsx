@@ -3,11 +3,12 @@
 import { useState } from 'react'
 import { WeightCard } from './weight-card'
 import { WeightChart } from './weight-chart'
+import { ScoreChart } from './score-chart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { WeightLog, DayScore, Streaks, CheckSemanal } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { AlertTriangle, Flame, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { AlertTriangle, Flame, TrendingUp, TrendingDown, Minus, CheckCircle2, Circle } from 'lucide-react'
 
 const LS_KEY = 'workout_target_weight'
 const DEFAULT_TARGET = 68
@@ -33,6 +34,7 @@ type Props = {
   checkSemanal: CheckSemanal
   alertas: string[]
   todayStatus: TodayStatus
+  scoreHistory: { date: string; score: number }[]
 }
 
 const scoreColor = (score: number) =>
@@ -47,9 +49,29 @@ const scoreBarColor = (score: number) =>
   : score >= 40 ? 'bg-yellow-500'
   : 'bg-red-500'
 
-function StatusDot({ ok }: { ok: boolean }) {
+function StatusRow({
+  ok,
+  label,
+  value,
+}: {
+  ok: boolean
+  label: string
+  value?: string
+}) {
   return (
-    <div className={cn('w-2 h-2 rounded-full flex-shrink-0', ok ? 'bg-green-400' : 'bg-red-400/60')} />
+    <div className="flex items-center gap-2 py-1">
+      {ok ? (
+        <CheckCircle2 className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
+      ) : (
+        <Circle className="w-3.5 h-3.5 text-muted-foreground/30 flex-shrink-0" />
+      )}
+      <span className={cn('text-sm', ok ? 'text-foreground' : 'text-muted-foreground')}>
+        {label}
+      </span>
+      {value && (
+        <span className="ml-auto text-xs text-muted-foreground tabular-nums">{value}</span>
+      )}
+    </div>
   )
 }
 
@@ -62,7 +84,7 @@ function StreakBadge({ count, label }: { count: number; label: string }) {
           {count}
         </span>
       </div>
-      <span className="text-[10px] text-muted-foreground">{label}</span>
+      <span className="text-[10px] text-muted-foreground text-center">{label}</span>
     </div>
   )
 }
@@ -75,6 +97,7 @@ export function DashboardClient({
   checkSemanal,
   alertas,
   todayStatus,
+  scoreHistory,
 }: Props) {
   const [logs, setLogs] = useState(initialLogs)
   const [latest, setLatest] = useState<WeightLog | null>(initialLatest)
@@ -120,76 +143,58 @@ export function DashboardClient({
         </Card>
       )}
 
-      {/* Status do Dia + Score */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Status do Dia */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-              Status do Dia
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2.5">
-            <div className="flex items-center gap-2">
-              <StatusDot ok={todayStatus.treino} />
-              <span className="text-sm">Treino</span>
-              <span className="ml-auto text-xs text-muted-foreground">
-                {todayStatus.treino ? 'Feito' : 'Pendente'}
-              </span>
+      {/* Resumo do Dia — merged card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+            Resumo do Dia
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Score */}
+            <div className="space-y-3">
+              <div className="flex items-end gap-2">
+                <span className={cn('text-6xl font-bold tabular-nums leading-none', scoreColor(score))}>
+                  {score}
+                </span>
+                <span className="text-muted-foreground mb-1 text-lg">/100</span>
+              </div>
+              <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                <div
+                  className={cn('h-full rounded-full transition-all duration-500', scoreBarColor(score))}
+                  style={{ width: `${score}%` }}
+                />
+              </div>
+              <p className={cn('text-sm font-semibold', scoreColor(score))}>{label}</p>
+              <div className="grid grid-cols-2 gap-x-4 pt-1 border-t border-border/50">
+                <div className="text-center py-2">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Alimentação</p>
+                  <p className="text-lg font-bold tabular-nums">{todayStatus.alimentacao}<span className="text-xs text-muted-foreground font-normal">/6</span></p>
+                </div>
+                <div className="text-center py-2">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Suplementos</p>
+                  <p className="text-lg font-bold tabular-nums">
+                    {[todayStatus.suplementos.creatina, todayStatus.suplementos.hipercalorico_manha, todayStatus.suplementos.whey, todayStatus.suplementos.hipercalorico_noite].filter(Boolean).length}
+                    <span className="text-xs text-muted-foreground font-normal">/4</span>
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <StatusDot ok={todayStatus.alimentacao >= 6} />
-              <span className="text-sm">Alimentação</span>
-              <span className="ml-auto text-xs text-muted-foreground">{todayStatus.alimentacao}/6</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <StatusDot ok={todayStatus.suplementos.creatina} />
-              <span className="text-sm text-muted-foreground">Creatina</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <StatusDot ok={todayStatus.suplementos.hipercalorico_manha} />
-              <span className="text-sm text-muted-foreground">Hipercalórico manhã</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <StatusDot ok={todayStatus.suplementos.whey} />
-              <span className="text-sm text-muted-foreground">Whey</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <StatusDot ok={todayStatus.suplementos.hipercalorico_noite} />
-              <span className="text-sm text-muted-foreground">Hipercalórico noite</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <StatusDot ok={todayStatus.postura} />
-              <span className="text-sm">Postura</span>
-              <span className="ml-auto text-xs text-muted-foreground">
-                {todayStatus.postura ? 'Feita' : 'Pendente'}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Score do Dia */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-              Score do Dia
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-end gap-2">
-              <span className={cn('text-5xl font-bold tabular-nums', scoreColor(score))}>{score}</span>
-              <span className="text-muted-foreground mb-1">/100</span>
+            {/* Checklist */}
+            <div className="divide-y divide-border/50">
+              <StatusRow ok={todayStatus.treino} label="Treino" value={todayStatus.treino ? 'Feito' : 'Pendente'} />
+              <StatusRow ok={todayStatus.alimentacao >= 6} label="Alimentação" value={`${todayStatus.alimentacao}/6`} />
+              <StatusRow ok={todayStatus.suplementos.creatina} label="Creatina" />
+              <StatusRow ok={todayStatus.suplementos.hipercalorico_manha} label="Hipercalórico manhã" />
+              <StatusRow ok={todayStatus.suplementos.whey} label="Whey" />
+              <StatusRow ok={todayStatus.suplementos.hipercalorico_noite} label="Hipercalórico noite" />
+              <StatusRow ok={todayStatus.postura} label="Postura" value={todayStatus.postura ? 'Feita' : 'Pendente'} />
             </div>
-            <div className="h-2 bg-secondary rounded-full overflow-hidden">
-              <div
-                className={cn('h-full rounded-full transition-all', scoreBarColor(score))}
-                style={{ width: `${score}%` }}
-              />
-            </div>
-            <p className={cn('text-sm font-medium', scoreColor(score))}>{label}</p>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Streaks */}
       <Card>
@@ -216,6 +221,9 @@ export function DashboardClient({
         onTargetChange={handleTargetChange}
       />
       <WeightChart logs={logs} target={target} />
+
+      {/* Score history */}
+      <ScoreChart scoreHistory={scoreHistory} />
 
       {/* Check Semanal */}
       <Card>
