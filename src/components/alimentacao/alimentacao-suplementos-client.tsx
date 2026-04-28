@@ -294,18 +294,21 @@ export function AlimentacaoSupplementosClient({ todayCompletions, todaySupplemen
         wasDone ? next.delete(index) : next.add(index)
         return next
       })
-      try {
-        await fetch('/api/alimentacao', {
-          method: wasDone ? 'DELETE' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ date: today, meal_index: index }),
-        })
-      } catch {
+      const revert = () =>
         setMeals((prev) => {
           const next = new Set(prev)
           wasDone ? next.add(index) : next.delete(index)
           return next
         })
+      try {
+        const res = await fetch('/api/alimentacao', {
+          method: wasDone ? 'DELETE' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date: today, meal_index: index }),
+        })
+        if (!res.ok) revert()
+      } catch {
+        revert()
       }
     },
     [meals, today]
@@ -320,18 +323,21 @@ export function AlimentacaoSupplementosClient({ todayCompletions, todaySupplemen
         wasDone ? next.delete(key) : next.add(key)
         return next
       })
-      try {
-        await fetch('/api/suplementos', {
-          method: wasDone ? 'DELETE' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ logged_at: today, supplement: key, count: wasDone ? 0 : 1 }),
-        })
-      } catch {
+      const revert = () =>
         setSups((prev) => {
           const next = new Set(prev)
           wasDone ? next.add(key) : next.delete(key)
           return next
         })
+      try {
+        const res = await fetch('/api/suplementos', {
+          method: wasDone ? 'DELETE' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ logged_at: today, supplement: key, count: wasDone ? 0 : 1 }),
+        })
+        if (!res.ok) revert()
+      } catch {
+        revert()
       }
     },
     [sups, today]

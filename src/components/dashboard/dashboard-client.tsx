@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { WeightCard } from './weight-card'
 import { WeightChart } from './weight-chart'
 import { ScoreChart } from './score-chart'
@@ -100,13 +100,13 @@ export function DashboardClient({
 }: Props) {
   const [logs, setLogs] = useState(initialLogs)
   const [latest, setLatest] = useState<WeightLog | null>(initialLatest)
-  const [target, setTarget] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(LS_KEY)
-      if (stored) return parseFloat(stored)
-    }
-    return DEFAULT_TARGET
-  })
+  const [target, setTarget] = useState(DEFAULT_TARGET)
+
+  // Read localStorage after hydration (SSR-safe)
+  useEffect(() => {
+    const stored = localStorage.getItem(LS_KEY)
+    if (stored) setTarget(parseFloat(stored))
+  }, [])
 
   function handleAdded(newLog: WeightLog) {
     setLatest(newLog)
