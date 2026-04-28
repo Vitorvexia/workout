@@ -54,10 +54,13 @@ export function PhotoComparison({ photos }: Props) {
                     fill
                     className="object-cover"
                   />
+                  {/* Date overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
+                    <p className="text-xs text-white font-medium text-center">
+                      {format(parseISO(photo.taken_at), "dd 'de' MMM yyyy", { locale: ptBR })}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground text-center">
-                  {format(parseISO(photo.taken_at), 'dd MMM yyyy', { locale: ptBR })}
-                </p>
               </div>
             ))}
           </div>
