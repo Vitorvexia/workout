@@ -2,16 +2,15 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Camera, Dumbbell, Activity, Pill, Utensils } from 'lucide-react'
+import { LayoutDashboard, Camera, Dumbbell, Activity, Utensils } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const links = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/alimentacao', label: 'Alimentação', icon: Utensils },
+  { href: '/alimentacao', label: 'Alimentação & Suplementos', icon: Utensils },
   { href: '/treinos', label: 'Ficha de Treino', icon: Dumbbell },
   { href: '/fotos', label: 'Fotos', icon: Camera },
   { href: '/postura', label: 'Ficha de Postura', icon: Activity },
-  { href: '/suplementos', label: 'Suplementos', icon: Pill },
 ]
 
 export function Nav() {

@@ -1,24 +1,28 @@
 import { supabase } from '@/lib/supabase'
-import { AlimentacaoClient } from '@/components/alimentacao/alimentacao-client'
-import { MealCompletion } from '@/lib/types'
+import { AlimentacaoSupplementosClient } from '@/components/alimentacao/alimentacao-suplementos-client'
+import { MealCompletion, SupplementWeekly } from '@/lib/types'
 
 export const revalidate = 0
 
 export default async function AlimentacaoPage() {
   const today = new Date().toISOString().split('T')[0]
 
-  const { data } = await supabase
-    .from('meal_completions')
-    .select('*')
-    .eq('date', today)
+  const [{ data: meals }, { data: sups }] = await Promise.all([
+    supabase.from('meal_completions').select('*').eq('date', today),
+    supabase.from('supplement_weekly').select('*').eq('logged_at', today),
+  ])
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Alimentação</h1>
-        <p className="text-sm text-muted-foreground mt-1">6 refeições diárias para ganho de peso</p>
+        <h1 className="text-2xl font-bold tracking-tight">Alimentação & Suplementos</h1>
+        <p className="text-sm text-muted-foreground mt-1">Roteiro diário de execução</p>
       </div>
-      <AlimentacaoClient todayCompletions={(data ?? []) as MealCompletion[]} />
+      <AlimentacaoSupplementosClient
+        todayCompletions={(meals ?? []) as MealCompletion[]}
+        todaySupplements={(sups ?? []) as SupplementWeekly[]}
+        today={today}
+      />
     </div>
   )
 }

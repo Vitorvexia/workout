@@ -5,7 +5,8 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const { logged_at, supplement, count } = body
 
-  if (!supplement || !['creatina', 'whey', 'hipercalorico'].includes(supplement)) {
+  const VALID = ['creatina', 'whey', 'hipercalorico', 'hipercalorico_manha', 'hipercalorico_noite', 'hipercalorico_tarde']
+  if (!supplement || !VALID.includes(supplement)) {
     return NextResponse.json({ error: 'Suplemento inválido' }, { status: 400 })
   }
 

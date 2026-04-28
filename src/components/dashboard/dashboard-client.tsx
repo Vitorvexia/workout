@@ -15,7 +15,13 @@ const DEFAULT_TARGET = 68
 type TodayStatus = {
   treino: boolean
   alimentacao: number
-  suplementos: { creatina: boolean; whey: boolean; hipercalorico: boolean }
+  suplementos: {
+    creatina: boolean
+    whey: boolean
+    hipercalorico: boolean
+    hipercalorico_manha: boolean
+    hipercalorico_noite: boolean
+  }
   postura: boolean
 }
 
@@ -141,12 +147,16 @@ export function DashboardClient({
               <span className="text-sm text-muted-foreground">Creatina</span>
             </div>
             <div className="flex items-center gap-2">
+              <StatusDot ok={todayStatus.suplementos.hipercalorico_manha} />
+              <span className="text-sm text-muted-foreground">Hipercalórico manhã</span>
+            </div>
+            <div className="flex items-center gap-2">
               <StatusDot ok={todayStatus.suplementos.whey} />
               <span className="text-sm text-muted-foreground">Whey</span>
             </div>
             <div className="flex items-center gap-2">
-              <StatusDot ok={todayStatus.suplementos.hipercalorico} />
-              <span className="text-sm text-muted-foreground">Hipercalórico</span>
+              <StatusDot ok={todayStatus.suplementos.hipercalorico_noite} />
+              <span className="text-sm text-muted-foreground">Hipercalórico noite</span>
             </div>
             <div className="flex items-center gap-2">
               <StatusDot ok={todayStatus.postura} />

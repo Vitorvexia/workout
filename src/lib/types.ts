@@ -45,10 +45,25 @@ export type PostureChecklist = {
   created_at: string
 }
 
+export type SupplementKey =
+  | 'creatina'
+  | 'whey'
+  | 'hipercalorico'
+  | 'hipercalorico_manha'
+  | 'hipercalorico_noite'
+  | 'hipercalorico_tarde'
+
+export const MANDATORY_SUPS: SupplementKey[] = [
+  'creatina',
+  'hipercalorico_manha',
+  'whey',
+  'hipercalorico_noite',
+]
+
 export type SupplementWeekly = {
   id: string
   logged_at: string
-  supplement: 'creatina' | 'whey' | 'hipercalorico'
+  supplement: SupplementKey
   count: number
   created_at: string
 }
@@ -81,7 +96,13 @@ export type DayScore = {
   label: 'Dia fraco' | 'Dia médio' | 'Bom dia' | 'Dia perfeito'
   treino: boolean
   alimentacao: number
-  suplementos: { creatina: boolean; whey: boolean; hipercalorico: boolean }
+  suplementos: {
+    creatina: boolean
+    whey: boolean
+    hipercalorico: boolean
+    hipercalorico_manha: boolean
+    hipercalorico_noite: boolean
+  }
   postura: boolean
 }
 

@@ -3,7 +3,7 @@ import { DashboardClient } from '@/components/dashboard/dashboard-client'
 import { WeeklyRoutines } from '@/components/dashboard/weekly-routines'
 import { format, startOfWeek, subDays } from 'date-fns'
 import { computeDayScore, computeStreaks, computeCheckSemanal } from '@/lib/score'
-import { WeightLog, MealCompletion, PostureChecklist, SupplementWeekly, FichaCompletion } from '@/lib/types'
+import { WeightLog, MealCompletion, PostureChecklist, SupplementWeekly, FichaCompletion, MANDATORY_SUPS } from '@/lib/types'
 
 export const revalidate = 0
 
@@ -58,12 +58,17 @@ export default async function DashboardPage() {
   const todayMealCount = todayMeals.length
   const todayTreino = todayFicha.length > 0
   const todayPosturaFeita = todayPosture.length > 0
+
+  const hasSup = (key: string) => todaySupplements.some((s) => s.supplement === key && s.count > 0)
   const todaySup = {
-    creatina: todaySupplements.some((s) => s.supplement === 'creatina' && s.count > 0),
-    whey: todaySupplements.some((s) => s.supplement === 'whey' && s.count > 0),
-    hipercalorico: todaySupplements.some((s) => s.supplement === 'hipercalorico' && s.count > 0),
+    creatina: hasSup('creatina'),
+    whey: hasSup('whey'),
+    hipercalorico: hasSup('hipercalorico_manha') || hasSup('hipercalorico_noite') || hasSup('hipercalorico'),
+    hipercalorico_manha: hasSup('hipercalorico_manha'),
+    hipercalorico_noite: hasSup('hipercalorico_noite'),
   }
-  const supCount = [todaySup.creatina, todaySup.whey, todaySup.hipercalorico].filter(Boolean).length
+  // mandatory: creatina, hipercalorico_manha, whey, hipercalorico_noite
+  const supCount = MANDATORY_SUPS.filter((k) => hasSup(k)).length
 
   // --- score today ---
   const dayScore = computeDayScore({
@@ -105,7 +110,8 @@ export default async function DashboardPage() {
 
   const history = Array.from(allDates).map((date) => {
     const sups = supByDate.get(date) ?? []
-    const sc = sups.filter((s) => s.count > 0).length
+    // count only mandatory supplements
+    const sc = MANDATORY_SUPS.filter((k) => sups.some((s) => s.supplement === k && s.count > 0)).length
     return {
       date,
       mealCount: mealByDate.get(date) ?? 0,

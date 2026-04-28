@@ -4,13 +4,13 @@ type DailyData = {
   date: string
   mealCount: number        // 0-6
   treino: boolean
-  supCount: number         // creatina+whey+hipercalorico present (0-3)
+  supCount: number         // mandatory sups done: creatina+hipercalorico_manha+whey+hipercalorico_noite (0-4)
   postura: boolean
 }
 
 export function computeDayScore(d: Omit<DailyData, 'date'>): DayScore {
   const alimentacaoPts = (d.mealCount / 6) * 35
-  const supPts = (d.supCount / 3) * 25
+  const supPts = (d.supCount / 4) * 25
   const treinoPts = d.treino ? 25 : 0
   const posturaPts = d.postura ? 15 : 0
   const score = Math.round(alimentacaoPts + supPts + treinoPts + posturaPts)
@@ -26,7 +26,13 @@ export function computeDayScore(d: Omit<DailyData, 'date'>): DayScore {
     label,
     treino: d.treino,
     alimentacao: d.mealCount,
-    suplementos: { creatina: false, whey: false, hipercalorico: false },
+    suplementos: {
+      creatina: false,
+      whey: false,
+      hipercalorico: false,
+      hipercalorico_manha: false,
+      hipercalorico_noite: false,
+    },
     postura: d.postura,
   }
 }
@@ -46,8 +52,8 @@ export function computeStreaks(history: DailyData[]): Streaks {
   return {
     alimentacao: streak((d) => d.mealCount === 6),
     treino: streak((d) => d.treino),
-    suplementos: streak((d) => d.supCount >= 2),
-    geral: streak((d) => d.mealCount === 6 && d.treino && d.supCount >= 2 && d.postura),
+    suplementos: streak((d) => d.supCount >= 3),
+    geral: streak((d) => d.mealCount === 6 && d.treino && d.supCount >= 3 && d.postura),
   }
 }
 

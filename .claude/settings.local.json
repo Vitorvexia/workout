@@ -1,7 +1,20 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx create-next-app@latest . --typescript --tailwind --app --src-dir no --import-alias \"@/*\" --no-git --yes)"
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --src-dir no --import-alias \"@/*\" --no-git --yes)",
+      "Bash(npm run *)",
+      "Bash(npx tsc *)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'feat: add migration + types + score/streaks utils *)",
+      "Bash(git commit -m 'feat: add Alimentacao page with 6 meal cards + daily progress *)",
+      "Bash(git commit -m 'feat: FichaTreino weight history via exercise_weights table *)",
+      "Bash(git commit -m 'feat: Postura pain level 0-10 + weekly avg display *)",
+      "Bash(git commit -m 'feat: Fotos timeline + before/after comparison + angle filter *)",
+      "Bash(git commit -m 'feat: Dashboard score, streaks, check semanal, alertas *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(supabase --version)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
