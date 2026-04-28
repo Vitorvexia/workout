@@ -1,6 +1,5 @@
 import { supabaseServer as supabase } from '@/lib/supabase-server'
 import { DashboardClient } from '@/components/dashboard/dashboard-client'
-import { WeeklyRoutines } from '@/components/dashboard/weekly-routines'
 import { format, startOfWeek, subDays } from 'date-fns'
 // subDays kept for ninetyDaysAgo calculation
 import { computeDayScore, computeStreaks, computeCheckSemanal } from '@/lib/score'
@@ -26,8 +25,6 @@ export default async function DashboardPage() {
 
   const [
     weightLogs,
-    fichaWeek,
-    supplementLogs,
     fichaAll,
     supplementAll,
     todayMeals,
@@ -36,8 +33,6 @@ export default async function DashboardPage() {
     todayFicha,
   ] = await Promise.all([
     safeQuery<WeightLog>(supabase.from('weight_logs').select('*').order('logged_at', { ascending: true }).order('created_at', { ascending: true }).limit(120)),
-    safeQuery<{ completed_at: string }>(supabase.from('ficha_completions').select('completed_at').gte('completed_at', weekStart)),
-    safeQuery<{ logged_at: string }>(supabase.from('supplement_weekly').select('logged_at').gte('logged_at', weekStart)),
     safeQuery<{ completed_at: string }>(supabase.from('ficha_completions').select('completed_at').order('completed_at', { ascending: true })),
     safeQuery<{ logged_at: string }>(supabase.from('supplement_weekly').select('logged_at').order('logged_at', { ascending: true })),
     safeQuery<MealCompletion>(supabase.from('meal_completions').select('*').eq('date', today)),
@@ -110,12 +105,6 @@ export default async function DashboardPage() {
     .sort((a, b) => a.date.localeCompare(b.date))
     .map((d) => ({ date: d.date, score: computeDayScore(d).score }))
 
-  // --- dates for weekly routines ---
-  const workoutDates = [...new Set(fichaWeek.map((r) => r.completed_at))]
-  const supplementDates = [...new Set(supplementLogs.map((r) => r.logged_at))]
-  const workoutAllDates = fichaAll.map((r) => r.completed_at)
-  const supplementAllDates = supplementAll.map((r) => r.logged_at)
-
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
@@ -134,12 +123,6 @@ export default async function DashboardPage() {
           alimentacao: todayMealCount,
           suplementos: todaySup,
         }}
-      />
-      <WeeklyRoutines
-        workoutDates={workoutDates}
-        supplementDates={supplementDates}
-        workoutAllDates={workoutAllDates}
-        supplementAllDates={supplementAllDates}
       />
     </div>
   )
