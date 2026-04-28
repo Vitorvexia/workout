@@ -11,6 +11,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
+  SelectLabel,
 } from '@/components/ui/select'
 import { Exercise, WorkoutSet } from '@/lib/types'
 
@@ -26,6 +28,16 @@ export function ExerciseForm({ exercises, onLogged }: Props) {
   const [sets, setSets] = useState('3')
   const [lastWeight, setLastWeight] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const grouped = exercises.reduce<Record<string, Exercise[]>>((acc, ex) => {
+    const key = ex.muscle_group ?? 'Outros'
+    if (!acc[key]) acc[key] = []
+    acc[key].push(ex)
+    return acc
+  }, {})
+
+  const ORDER = ['Peito', 'Costas', 'Bíceps', 'Tríceps', 'Perna', 'Ombro', 'Abs', 'Outros']
+  const sortedGroups = ORDER.filter((g) => grouped[g])
 
   useEffect(() => {
     if (!exerciseId) return
@@ -72,20 +84,21 @@ export function ExerciseForm({ exercises, onLogged }: Props) {
                 <SelectValue placeholder="Selecionar exercício" />
               </SelectTrigger>
               <SelectContent>
-                {exercises.map((ex) => (
-                  <SelectItem key={ex.id} value={ex.id}>
-                    {ex.name}
-                    {ex.muscle_group && (
-                      <span className="text-muted-foreground ml-1">· {ex.muscle_group}</span>
-                    )}
-                  </SelectItem>
+                {sortedGroups.map((group) => (
+                  <SelectGroup key={group}>
+                    <SelectLabel className="text-xs text-muted-foreground">{group}</SelectLabel>
+                    {grouped[group].map((ex) => (
+                      <SelectItem key={ex.id} value={ex.id}>
+                        {ex.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
                 ))}
               </SelectContent>
             </Select>
             {lastWeight !== null && (
               <p className="text-xs text-muted-foreground">
-                Último peso:{' '}
-                <span className="text-foreground font-medium">{lastWeight}kg</span>
+                Último peso: <span className="text-foreground font-medium">{lastWeight}kg</span>
               </p>
             )}
           </div>
@@ -93,31 +106,15 @@ export function ExerciseForm({ exercises, onLogged }: Props) {
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label className="text-xs">Peso (kg)</Label>
-              <Input
-                type="number"
-                step="0.5"
-                placeholder="60"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-              />
+              <Input type="number" step="0.5" placeholder="60" value={weight} onChange={(e) => setWeight(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Reps</Label>
-              <Input
-                type="number"
-                placeholder="12"
-                value={reps}
-                onChange={(e) => setReps(e.target.value)}
-              />
+              <Input type="number" placeholder="12" value={reps} onChange={(e) => setReps(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Séries</Label>
-              <Input
-                type="number"
-                placeholder="3"
-                value={sets}
-                onChange={(e) => setSets(e.target.value)}
-              />
+              <Input type="number" placeholder="3" value={sets} onChange={(e) => setSets(e.target.value)} />
             </div>
           </div>
 
