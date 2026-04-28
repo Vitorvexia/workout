@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabaseServer as supabase } from '@/lib/supabase-server'
 import { DashboardClient } from '@/components/dashboard/dashboard-client'
 import { WeeklyRoutines } from '@/components/dashboard/weekly-routines'
 import { format, startOfWeek, subDays } from 'date-fns'

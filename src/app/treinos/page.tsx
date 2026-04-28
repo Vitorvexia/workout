@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabaseServer as supabase } from '@/lib/supabase-server'
 import { TreinosClient } from '@/components/treinos/treinos-client'
 import { FichaCompletion } from '@/lib/types'
 

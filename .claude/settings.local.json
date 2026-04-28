@@ -15,7 +15,9 @@
       "Bash(git push *)",
       "Bash(supabase --version)",
       "Bash(git commit -m ' *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Read(//c/Users/vitor/OneDrive/Área de Trabalho/workout/.claire/worktrees/**)",
+      "Bash(sed -i \"s|from '@/lib/supabase'|from '@/lib/supabase-server'|g; s|{ supabase }|{ supabaseServer as supabase }|g\" src/app/fotos/page.tsx src/app/treinos/page.tsx)"
     ]
   }
 }

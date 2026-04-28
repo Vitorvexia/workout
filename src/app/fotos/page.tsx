@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabaseServer as supabase } from '@/lib/supabase-server'
 import { FotosClient } from '@/components/fotos/fotos-client'
 
 export const revalidate = 0

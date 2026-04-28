@@ -44,7 +44,7 @@ export function WeeklyRoutines({
           readOnly
         />
         <RoutineTracker
-          title="Suplementos"
+          title="Alimentação + Suplementos"
           loggedDates={supplementDates}
           onToggle={handleSupplementToggle}
           onUnmark={handleSupplementUnmark}
