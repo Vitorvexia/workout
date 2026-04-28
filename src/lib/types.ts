@@ -33,7 +33,6 @@ export type ProgressPhoto = {
   created_at: string
 }
 
-// Posture checklist (replaces PostureLog)
 export type PostureChecklist = {
   id: string
   logged_at: string
@@ -42,10 +41,10 @@ export type PostureChecklist = {
   exercise_3: boolean
   exercise_4: boolean
   exercise_5: boolean
+  pain_level: number
   created_at: string
 }
 
-// Supplement weekly (per-day, per-supplement with count)
 export type SupplementWeekly = {
   id: string
   logged_at: string
@@ -60,4 +59,47 @@ export type FichaCompletion = {
   exercise_name: string
   completed_at: string
   created_at: string
+}
+
+export type MealCompletion = {
+  id: string
+  date: string
+  meal_index: number
+  created_at: string
+}
+
+export type ExerciseWeight = {
+  id: string
+  exercise_name: string
+  logged_at: string
+  weight_kg: number
+  created_at: string
+}
+
+export type DayScore = {
+  score: number
+  label: 'Dia fraco' | 'Dia médio' | 'Bom dia' | 'Dia perfeito'
+  treino: boolean
+  alimentacao: number
+  suplementos: { creatina: boolean; whey: boolean; hipercalorico: boolean }
+  postura: boolean
+}
+
+export type Streaks = {
+  alimentacao: number
+  treino: number
+  suplementos: number
+  geral: number
+}
+
+export type CheckSemanal = {
+  pesoInicial: number | null
+  pesoAtual: number | null
+  difPeso: number | null
+  refeicoes: number
+  treinos: number
+  suplementos: number
+  postura: number
+  resultado: 'Excelente' | 'Boa' | 'Fraca'
+  scoreMedia: number
 }
