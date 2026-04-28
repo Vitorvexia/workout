@@ -17,10 +17,17 @@ import { ptBR } from 'date-fns/locale'
 type Props = { logs: WeightLog[]; target: number }
 
 export function WeightChart({ logs, target }: Props) {
-  const data = logs.map((l) => ({
-    date: format(parseISO(l.logged_at), 'dd/MM', { locale: ptBR }),
-    peso: Number(l.weight_kg),
-  }))
+  // One point per day — keep latest entry
+  const byDay = new Map<string, number>()
+  for (const l of logs) {
+    byDay.set(l.logged_at, Number(l.weight_kg))
+  }
+  const data = Array.from(byDay.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, peso]) => ({
+      date: format(parseISO(date), 'dd/MM', { locale: ptBR }),
+      peso,
+    }))
 
   return (
     <Card>

@@ -32,7 +32,7 @@ export function WeightCard({ latest, target, onAdded, onTargetChange }: Props) {
 
   function saveTarget() {
     const val = parseFloat(targetInput)
-    if (!isNaN(val) && val > current) {
+    if (!isNaN(val) && val >= 30 && val <= 300) {
       onTargetChange(val)
     }
     setEditingTarget(false)
@@ -111,11 +111,11 @@ export function WeightCard({ latest, target, onAdded, onTargetChange }: Props) {
               </div>
             ) : (
               <button
-                className="flex items-center gap-1 group"
+                className="flex items-center gap-1"
                 onClick={() => { setTargetInput(String(target)); setEditingTarget(true) }}
               >
                 <span className="text-sm font-semibold">{target}kg</span>
-                <Pencil className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Pencil className="w-3 h-3 text-muted-foreground" />
               </button>
             )}
           </div>
