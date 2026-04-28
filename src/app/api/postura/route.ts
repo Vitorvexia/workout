@@ -5,6 +5,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const { logged_at, exercise_1, exercise_2, exercise_3, exercise_4, exercise_5 } = body
 
+  const { pain_level } = body
   const { data, error } = await supabase
     .from('posture_checklist')
     .upsert({
@@ -14,6 +15,7 @@ export async function POST(req: NextRequest) {
       exercise_3: Boolean(exercise_3),
       exercise_4: Boolean(exercise_4),
       exercise_5: Boolean(exercise_5),
+      pain_level: Number(pain_level ?? 0),
     }, { onConflict: 'logged_at' })
     .select()
     .single()

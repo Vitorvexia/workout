@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PostureChecklist } from '@/lib/types'
+import { getToday } from '@/lib/utils'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
 const EXERCISES = [
@@ -56,6 +57,7 @@ export function PostureForm({ today, onSaved }: Props) {
     exercise_4: today?.exercise_4 ?? false,
     exercise_5: today?.exercise_5 ?? false,
   })
+  const [painLevel, setPainLevel] = useState<number>(today?.pain_level ?? 0)
   const [expanded, setExpanded] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -70,7 +72,8 @@ export function PostureForm({ today, onSaved }: Props) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...checked,
-        logged_at: new Date().toISOString().split('T')[0],
+        pain_level: painLevel,
+        logged_at: getToday(),
       }),
     })
     const data = await res.json()
@@ -79,6 +82,12 @@ export function PostureForm({ today, onSaved }: Props) {
   }
 
   const doneCount = Object.values(checked).filter(Boolean).length
+
+  const painColor =
+    painLevel === 0 ? 'text-green-400'
+    : painLevel <= 3 ? 'text-yellow-400'
+    : painLevel <= 6 ? 'text-orange-400'
+    : 'text-red-400'
 
   return (
     <div className="space-y-3">
@@ -139,6 +148,31 @@ export function PostureForm({ today, onSaved }: Props) {
           </Card>
         )
       })}
+
+      {/* Pain level */}
+      <Card>
+        <CardContent className="pt-4 pb-3">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Dor hoje</span>
+              <span className={`text-lg font-bold ${painColor}`}>{painLevel}/10</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={10}
+              step={1}
+              value={painLevel}
+              onChange={(e) => setPainLevel(Number(e.target.value))}
+              className="w-full accent-foreground"
+            />
+            <div className="flex justify-between text-[10px] text-muted-foreground">
+              <span>Sem dor</span>
+              <span>Dor intensa</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Button onClick={handleSave} className="w-full" disabled={loading}>
         {loading ? 'Salvando...' : 'Salvar Progresso'}
