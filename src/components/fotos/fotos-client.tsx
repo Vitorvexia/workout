@@ -14,12 +14,16 @@ export function FotosClient({ initialPhotos }: Props) {
     setPhotos((prev) => [photo, ...prev])
   }
 
+  function handleDeleted(id: string) {
+    setPhotos((prev) => prev.filter((p) => p.id !== id))
+  }
+
   return (
     <div className="space-y-6">
       <div className="max-w-sm">
         <PhotoUpload onUploaded={handleUploaded} />
       </div>
-      <PhotoComparison photos={photos} />
+      <PhotoComparison photos={photos} onDelete={handleDeleted} />
     </div>
   )
 }

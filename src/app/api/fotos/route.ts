@@ -39,6 +39,23 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(data, { status: 201 })
 }
 
+export async function DELETE(req: NextRequest) {
+  const { id, photo_url } = await req.json()
+  if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
+
+  // Extract storage filename from public URL
+  // URL format: .../storage/v1/object/public/progress-photos/<filename>
+  const filename = photo_url?.split('/progress-photos/').at(1)
+  if (filename) {
+    await supabase.storage.from('progress-photos').remove([filename])
+    // ignore storage error — still delete the DB row
+  }
+
+  const { error } = await supabase.from('progress_photos').delete().eq('id', id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
+}
+
 export async function GET() {
   const { data, error } = await supabase
     .from('progress_photos')

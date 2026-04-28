@@ -7,18 +7,32 @@ import { ProgressPhoto } from '@/lib/types'
 import Image from 'next/image'
 import { format, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { Trash2 } from 'lucide-react'
 
-type Props = { photos: ProgressPhoto[] }
+type Props = { photos: ProgressPhoto[]; onDelete: (id: string) => void }
 
 const ANGLES = ['frente', 'lado', 'costas'] as const
 
 type ViewMode = 'timeline' | 'comparar'
 
-export function PhotoComparison({ photos }: Props) {
+export function PhotoComparison({ photos, onDelete }: Props) {
   const [selectedAngle, setSelectedAngle] = useState<typeof ANGLES[number]>('frente')
   const [viewMode, setViewMode] = useState<ViewMode>('timeline')
   const [compareA, setCompareA] = useState<string | null>(null)
   const [compareB, setCompareB] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
+
+  async function handleDelete(photo: ProgressPhoto) {
+    if (!confirm(`Excluir foto de ${format(parseISO(photo.taken_at), "dd 'de' MMM yyyy", { locale: ptBR })}?`)) return
+    setDeleting(photo.id)
+    const res = await fetch('/api/fotos', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: photo.id, photo_url: photo.photo_url }),
+    })
+    if (res.ok) onDelete(photo.id)
+    setDeleting(null)
+  }
 
   const filtered = photos.filter((p) => p.angle === selectedAngle)
   const oldest = filtered[filtered.length - 1] ?? null
@@ -82,7 +96,7 @@ export function PhotoComparison({ photos }: Props) {
           <div className="grid grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-1">
             {filtered.map((photo) => (
               <div key={photo.id} className="space-y-1">
-                <div className="relative aspect-[3/4] rounded-md overflow-hidden bg-secondary">
+                <div className="relative aspect-[3/4] rounded-md overflow-hidden bg-secondary group">
                   <Image
                     src={photo.photo_url}
                     alt={`${photo.angle} ${photo.taken_at}`}
@@ -94,6 +108,17 @@ export function PhotoComparison({ photos }: Props) {
                       {format(parseISO(photo.taken_at), "dd 'de' MMM yyyy", { locale: ptBR })}
                     </p>
                   </div>
+                  <button
+                    onClick={() => handleDelete(photo)}
+                    disabled={deleting === photo.id}
+                    className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/80"
+                    title="Excluir foto"
+                  >
+                    {deleting === photo.id
+                      ? <span className="text-[10px] text-white">...</span>
+                      : <Trash2 className="w-3.5 h-3.5 text-white" />
+                    }
+                  </button>
                 </div>
               </div>
             ))}
