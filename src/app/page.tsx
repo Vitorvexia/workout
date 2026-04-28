@@ -105,9 +105,9 @@ export default async function DashboardPage() {
   const streaks = computeStreaks(history)
   const checkSemanal = computeCheckSemanal(history, logs, weekStart, weekEnd)
 
+  // Pass 90 days — client-side period filter trims further
   const scoreHistory = history
     .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(-30)
     .map((d) => ({ date: d.date, score: computeDayScore(d).score }))
 
   // --- dates for weekly routines ---

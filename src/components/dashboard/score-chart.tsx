@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { PeriodFilter, Period, cutoffDate } from '@/components/ui/period-filter'
 import {
   LineChart,
   Line,
@@ -18,10 +20,15 @@ type Props = {
 }
 
 export function ScoreChart({ scoreHistory }: Props) {
-  const data = scoreHistory.map((d) => ({
-    dia: format(parseISO(d.date), 'dd/MM', { locale: ptBR }),
-    score: d.score,
-  }))
+  const [period, setPeriod] = useState<Period>('7d')
+  const cutoff = cutoffDate(period)
+
+  const data = scoreHistory
+    .filter((d) => d.date >= cutoff)
+    .map((d) => ({
+      dia: format(parseISO(d.date), 'dd/MM', { locale: ptBR }),
+      score: d.score,
+    }))
 
   const avg = data.length > 0
     ? Math.round(data.reduce((s, d) => s + d.score, 0) / data.length)
@@ -32,13 +39,16 @@ export function ScoreChart({ scoreHistory }: Props) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-            Score Diário — Últimos 30 dias
+            Score Diário
           </CardTitle>
-          {data.length > 0 && (
-            <span className="text-xs text-muted-foreground">
-              Média: <span className="font-semibold text-foreground">{avg}/100</span>
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {data.length > 0 && (
+              <span className="text-xs text-muted-foreground">
+                Média: <span className="font-semibold text-foreground">{avg}/100</span>
+              </span>
+            )}
+            <PeriodFilter value={period} onChange={setPeriod} />
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -46,8 +56,8 @@ export function ScoreChart({ scoreHistory }: Props) {
           <div className="py-8 text-center space-y-1">
             <p className="text-sm text-muted-foreground">
               {data.length === 0
-                ? 'Nenhum dado ainda. Use o app por alguns dias.'
-                : 'Precisa de pelo menos 2 dias de dados para mostrar o gráfico.'}
+                ? 'Nenhum dado neste período.'
+                : 'Precisa de pelo menos 2 dias de dados.'}
             </p>
             <p className="text-xs text-muted-foreground/50">O gráfico aparecerá automaticamente.</p>
           </div>

@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { PeriodFilter, Period } from '@/components/ui/period-filter'
 import {
   LineChart,
   Line,
@@ -24,10 +26,18 @@ function countInWeek(dates: string[], weekStart: Date): number {
   return [...new Set(dates)].filter((d) => d >= start && d <= end).length
 }
 
+// Max weeks per period
+const PERIOD_WEEKS: Record<Period, number> = {
+  '7d': 1,
+  '6m': 26,
+  'all': 52,
+}
+
 export function RoutineChart({ workoutDates, supplementDates }: Props) {
+  const [period, setPeriod] = useState<Period>('all')
   const today = new Date()
 
-  // Start from the earliest week that has any data, or current week if none
+  // Start from earliest data week, capped by period
   const allDates = [...workoutDates, ...supplementDates]
   const earliest = allDates.length > 0
     ? allDates.reduce((a, b) => (a < b ? a : b))
@@ -35,9 +45,10 @@ export function RoutineChart({ workoutDates, supplementDates }: Props) {
   const earliestWeek = startOfWeek(new Date(earliest + 'T12:00:00'), { weekStartsOn: 1 })
   const currentWeek = startOfWeek(today, { weekStartsOn: 1 })
 
-  // Build weeks from earliest to current, max 12
   const msPerWeek = 7 * 24 * 60 * 60 * 1000
-  const totalWeeks = Math.min(12, Math.round((currentWeek.getTime() - earliestWeek.getTime()) / msPerWeek) + 1)
+  const weeksFromData = Math.round((currentWeek.getTime() - earliestWeek.getTime()) / msPerWeek) + 1
+  const maxWeeks = PERIOD_WEEKS[period]
+  const totalWeeks = Math.min(maxWeeks, weeksFromData)
 
   const weeks = Array.from({ length: totalWeeks }, (_, i) =>
     startOfWeek(subWeeks(currentWeek, totalWeeks - 1 - i), { weekStartsOn: 1 })
@@ -54,9 +65,12 @@ export function RoutineChart({ workoutDates, supplementDates }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-          Histórico de Rotina — 12 semanas
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+            Histórico de Rotina
+          </CardTitle>
+          <PeriodFilter value={period} onChange={setPeriod} />
+        </div>
       </CardHeader>
       <CardContent>
         {!hasAnyData ? (
@@ -72,7 +86,7 @@ export function RoutineChart({ workoutDates, supplementDates }: Props) {
                 tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
                 axisLine={false}
                 tickLine={false}
-                interval={1}
+                interval={totalWeeks > 12 ? Math.floor(totalWeeks / 8) : 1}
               />
               <YAxis
                 domain={[0, 7]}

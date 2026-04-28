@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { PeriodFilter, Period, cutoffDate } from '@/components/ui/period-filter'
 import {
   LineChart,
   Line,
@@ -17,10 +19,13 @@ import { ptBR } from 'date-fns/locale'
 type Props = { logs: WeightLog[]; target: number }
 
 export function WeightChart({ logs, target }: Props) {
-  // One point per day — keep latest entry
+  const [period, setPeriod] = useState<Period>('all')
+  const cutoff = cutoffDate(period)
+
+  // One point per day — keep latest entry, filtered by period
   const byDay = new Map<string, number>()
   for (const l of logs) {
-    byDay.set(l.logged_at, Number(l.weight_kg))
+    if (l.logged_at >= cutoff) byDay.set(l.logged_at, Number(l.weight_kg))
   }
   const data = Array.from(byDay.entries())
     .sort(([a], [b]) => a.localeCompare(b))
@@ -32,9 +37,12 @@ export function WeightChart({ logs, target }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-          Evolução de Peso
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+            Evolução de Peso
+          </CardTitle>
+          <PeriodFilter value={period} onChange={setPeriod} />
+        </div>
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
