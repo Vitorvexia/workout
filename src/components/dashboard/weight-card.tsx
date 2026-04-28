@@ -13,7 +13,7 @@ const LS_KEY = 'workout_target_weight'
 
 type Props = {
   latest: WeightLog | null
-  onAdded: () => void
+  onAdded: (newLog: WeightLog) => void
 }
 
 export function WeightCard({ latest, onAdded }: Props) {
@@ -46,14 +46,15 @@ export function WeightCard({ latest, onAdded }: Props) {
     e.preventDefault()
     if (!weight) return
     setLoading(true)
-    await fetch('/api/peso', {
+    const res = await fetch('/api/peso', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ weight_kg: parseFloat(weight) }),
     })
+    const newLog: WeightLog = await res.json()
     setWeight('')
     setLoading(false)
-    onAdded()
+    if (res.ok) onAdded(newLog)
   }
 
   return (

@@ -1,4 +1,5 @@
 import { RoutineTracker } from './routine-tracker'
+import { RoutineChart } from './routine-chart'
 
 type Props = {
   postureDates: string[]
@@ -8,10 +9,17 @@ type Props = {
 
 export function WeeklyRoutines({ postureDates, workoutDates, supplementDates }: Props) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <RoutineTracker title="Exercícios Posturais" loggedDates={postureDates} />
-      <RoutineTracker title="Academia" loggedDates={workoutDates} />
-      <RoutineTracker title="Suplementos" loggedDates={supplementDates} />
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <RoutineTracker title="Exercícios Posturais" loggedDates={postureDates} />
+        <RoutineTracker title="Academia" loggedDates={workoutDates} />
+        <RoutineTracker title="Suplementos" loggedDates={supplementDates} />
+      </div>
+      <RoutineChart
+        postureDates={postureDates}
+        workoutDates={workoutDates}
+        supplementDates={supplementDates}
+      />
     </div>
   )
 }

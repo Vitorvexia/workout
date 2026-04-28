@@ -12,20 +12,22 @@ type Props = {
 
 export function DashboardClient({ latest: initialLatest, logs: initialLogs }: Props) {
   const [logs, setLogs] = useState(initialLogs)
-  const latest = logs.at(-1) ?? initialLatest
+  const [latest, setLatest] = useState<WeightLog | null>(initialLatest)
 
-  async function refresh() {
-    const res = await fetch('/api/peso')
-    const data = await res.json()
-    setLogs(data)
+  function handleAdded(newLog: WeightLog) {
+    setLatest(newLog)
+    setLogs((prev) => {
+      // Insert maintaining ascending order by logged_at
+      const updated = [...prev, newLog]
+      updated.sort((a, b) => a.logged_at.localeCompare(b.logged_at))
+      return updated
+    })
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <WeightCard latest={latest} onAdded={refresh} />
-      <div className="lg:col-span-2">
-        <WeightChart logs={logs} />
-      </div>
+    <div className="space-y-4">
+      <WeightCard latest={latest} onAdded={handleAdded} />
+      <WeightChart logs={logs} />
     </div>
   )
 }

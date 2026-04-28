@@ -1,13 +1,10 @@
 import { supabase } from '@/lib/supabase'
 import { DashboardClient } from '@/components/dashboard/dashboard-client'
 import { WeeklyRoutines } from '@/components/dashboard/weekly-routines'
-import { subDays, format } from 'date-fns'
 
 export const revalidate = 0
 
 export default async function DashboardPage() {
-  const sevenDaysAgo = format(subDays(new Date(), 6), 'yyyy-MM-dd')
-
   const [
     { data: weightLogs },
     { data: postureLogs },
@@ -22,24 +19,23 @@ export default async function DashboardPage() {
     supabase
       .from('posture_logs')
       .select('logged_at')
-      .gte('logged_at', sevenDaysAgo),
+      .order('logged_at', { ascending: true }),
     supabase
       .from('workout_sets')
       .select('logged_at')
-      .gte('logged_at', sevenDaysAgo),
+      .order('logged_at', { ascending: true }),
     supabase
       .from('supplement_logs')
       .select('logged_at')
-      .gte('logged_at', sevenDaysAgo),
+      .order('logged_at', { ascending: true }),
   ])
 
   const logs = weightLogs ?? []
   const latest = logs.at(-1) ?? null
 
-  // Unique dates only
-  const postureDates = [...new Set((postureLogs ?? []).map((r) => r.logged_at))]
-  const workoutDates = [...new Set((workoutSets ?? []).map((r) => r.logged_at))]
-  const supplementDates = [...new Set((supplementLogs ?? []).map((r) => r.logged_at))]
+  const postureDates = [...new Set((postureLogs ?? []).map((r) => r.logged_at as string))]
+  const workoutDates = [...new Set((workoutSets ?? []).map((r) => r.logged_at as string))]
+  const supplementDates = [...new Set((supplementLogs ?? []).map((r) => r.logged_at as string))]
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
