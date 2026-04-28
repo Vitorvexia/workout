@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { FichaCompletion } from '@/lib/types'
+import { FichaCompletion, ExerciseWeight } from '@/lib/types'
+import { getToday } from '@/lib/utils'
+import { TrendingUp } from 'lucide-react'
 
 const FICHA: Record<string, { label: string; muscles: string; exercises: string[] }> = {
   A: {
@@ -72,37 +74,98 @@ const FICHA: Record<string, { label: string; muscles: string; exercises: string[
   },
 }
 
-// Weight input that persists to localStorage
+type WeightHistory = {
+  last: number | null
+  record: number | null
+}
+
 function WeightInput({ exercise }: { exercise: string }) {
-  const key = `ficha_weight_${exercise}`
+  const lsKey = `ficha_weight_${exercise}`
+  const today = getToday()
   const [value, setValue] = useState('')
+  const [history, setHistory] = useState<WeightHistory>({ last: null, record: null })
   const loaded = useRef(false)
 
   useEffect(() => {
-    if (!loaded.current) {
-      const stored = localStorage.getItem(key)
-      if (stored) setValue(stored)
-      loaded.current = true
-    }
-  }, [key])
+    if (loaded.current) return
+    loaded.current = true
 
-  function handleChange(v: string) {
-    setValue(v)
-    if (v) localStorage.setItem(key, v)
-    else localStorage.removeItem(key)
+    // seed from localStorage as instant visual cache
+    const cached = localStorage.getItem(lsKey)
+    if (cached) setValue(cached)
+
+    // fetch history from Supabase
+    fetch(`/api/exercise-weights?name=${encodeURIComponent(exercise)}`)
+      .then((r) => r.json())
+      .then((data: ExerciseWeight[]) => {
+        if (!data.length) return
+        const weights = data.map((d) => Number(d.weight_kg))
+        const record = Math.max(...weights)
+        // last = most recent entry that is NOT today
+        const lastEntry = data.find((d) => d.logged_at !== today)
+        setHistory({ last: lastEntry ? Number(lastEntry.weight_kg) : null, record })
+        // show today's value if already saved
+        const todayEntry = data.find((d) => d.logged_at === today)
+        if (todayEntry) {
+          const v = String(todayEntry.weight_kg)
+          setValue(v)
+          localStorage.setItem(lsKey, v)
+        }
+      })
+      .catch(() => {/* best effort */})
+  }, [exercise, lsKey, today])
+
+  async function handleBlur() {
+    if (!value) return
+    const kg = parseFloat(value)
+    if (isNaN(kg) || kg <= 0) return
+
+    localStorage.setItem(lsKey, value)
+
+    try {
+      await fetch('/api/exercise-weights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ exercise_name: exercise, weight_kg: kg, logged_at: today }),
+      })
+      setHistory((prev) => ({
+        last: prev.last,
+        record: prev.record !== null ? Math.max(prev.record, kg) : kg,
+      }))
+    } catch {/* best effort */}
   }
 
+  const isRecord = history.record !== null && parseFloat(value) >= history.record && parseFloat(value) > 0
+  const isProgress = history.last !== null && parseFloat(value) > history.last
+
   return (
-    <div className="flex items-center gap-1.5 mt-1.5" onClick={(e) => e.stopPropagation()}>
+    <div className="flex items-center gap-2 mt-1.5" onClick={(e) => e.stopPropagation()}>
       <Input
         type="number"
         step="0.5"
+        min="0"
         placeholder="kg"
         value={value}
-        onChange={(e) => handleChange(e.target.value)}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={handleBlur}
         className="h-6 w-16 text-xs px-2"
       />
-      <span className="text-[10px] text-muted-foreground">kg usados</span>
+      <div className="flex items-center gap-1.5 text-[10px]">
+        {history.last !== null && (
+          <span className="text-muted-foreground">último: {history.last}kg</span>
+        )}
+        {history.record !== null && (
+          <span className="text-muted-foreground">| rec: {history.record}kg</span>
+        )}
+        {isProgress && (
+          <span className="text-green-400 flex items-center gap-0.5">
+            <TrendingUp className="w-3 h-3" /> PR
+          </span>
+        )}
+        {isRecord && !isProgress && (
+          <span className="text-yellow-400">🏆</span>
+        )}
+      </div>
     </div>
   )
 }
@@ -112,14 +175,14 @@ type Props = {
 }
 
 export function FichaTreino({ todayCompletions }: Props) {
-  const today = new Date().toISOString().split('T')[0]
+  const today = getToday()
   const [activeDay, setActiveDay] = useState<string>('A')
   const [completed, setCompleted] = useState<Set<string>>(
     new Set(todayCompletions.map((c) => `${c.day_letter}::${c.exercise_name}`))
   )
   const [loading, setLoading] = useState<string | null>(null)
 
-  async function toggle(day: string, exercise: string) {
+  const toggle = useCallback(async (day: string, exercise: string) => {
     const key = `${day}::${exercise}`
     const isDone = completed.has(key)
     setLoading(key)
@@ -140,7 +203,7 @@ export function FichaTreino({ todayCompletions }: Props) {
       setCompleted((prev) => new Set([...prev, key]))
     }
     setLoading(null)
-  }
+  }, [completed, today])
 
   const current = FICHA[activeDay]
   const doneCount = current.exercises.filter((ex) => completed.has(`${activeDay}::${ex}`)).length
