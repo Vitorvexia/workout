@@ -12,19 +12,50 @@ type Props = { photos: ProgressPhoto[] }
 
 const ANGLES = ['frente', 'lado', 'costas'] as const
 
+type ViewMode = 'timeline' | 'comparar'
+
 export function PhotoComparison({ photos }: Props) {
-  const [selectedAngle, setSelectedAngle] = useState<string>('frente')
+  const [selectedAngle, setSelectedAngle] = useState<typeof ANGLES[number]>('frente')
+  const [viewMode, setViewMode] = useState<ViewMode>('timeline')
+  const [compareA, setCompareA] = useState<string | null>(null)
+  const [compareB, setCompareB] = useState<string | null>(null)
 
   const filtered = photos.filter((p) => p.angle === selectedAngle)
+  const oldest = filtered[filtered.length - 1] ?? null
+  const newest = filtered[0] ?? null
+
+  const photoA = filtered.find((p) => p.id === compareA) ?? oldest
+  const photoB = filtered.find((p) => p.id === compareB) ?? newest
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-          Comparação
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+            Fotos
+          </CardTitle>
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant={viewMode === 'timeline' ? 'default' : 'outline'}
+              onClick={() => setViewMode('timeline')}
+              className="text-xs h-7 px-2"
+            >
+              Linha do Tempo
+            </Button>
+            <Button
+              size="sm"
+              variant={viewMode === 'comparar' ? 'default' : 'outline'}
+              onClick={() => setViewMode('comparar')}
+              className="text-xs h-7 px-2"
+            >
+              Comparar
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Angle filter */}
         <div className="flex gap-2">
           {ANGLES.map((a) => (
             <Button
@@ -35,6 +66,9 @@ export function PhotoComparison({ photos }: Props) {
               className="capitalize text-xs"
             >
               {a}
+              <span className="ml-1 text-[10px] opacity-60">
+                ({photos.filter((p) => p.angle === a).length})
+              </span>
             </Button>
           ))}
         </div>
@@ -43,9 +77,10 @@ export function PhotoComparison({ photos }: Props) {
           <p className="text-sm text-muted-foreground text-center py-8">
             Nenhuma foto de {selectedAngle} ainda
           </p>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {filtered.slice(0, 4).map((photo) => (
+        ) : viewMode === 'timeline' ? (
+          /* Timeline: all photos newest → oldest */
+          <div className="grid grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-1">
+            {filtered.map((photo) => (
               <div key={photo.id} className="space-y-1">
                 <div className="relative aspect-[3/4] rounded-md overflow-hidden bg-secondary">
                   <Image
@@ -54,7 +89,6 @@ export function PhotoComparison({ photos }: Props) {
                     fill
                     className="object-cover"
                   />
-                  {/* Date overlay */}
                   <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
                     <p className="text-xs text-white font-medium text-center">
                       {format(parseISO(photo.taken_at), "dd 'de' MMM yyyy", { locale: ptBR })}
@@ -63,6 +97,96 @@ export function PhotoComparison({ photos }: Props) {
                 </div>
               </div>
             ))}
+          </div>
+        ) : (
+          /* Comparar: side-by-side */
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              {/* Before */}
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground text-center font-medium">Antes</p>
+                {photoA ? (
+                  <div className="relative aspect-[3/4] rounded-md overflow-hidden bg-secondary">
+                    <Image
+                      src={photoA.photo_url}
+                      alt="antes"
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
+                      <p className="text-xs text-white font-medium text-center">
+                        {format(parseISO(photoA.taken_at), "dd MMM yy", { locale: ptBR })}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="aspect-[3/4] rounded-md bg-secondary flex items-center justify-center">
+                    <p className="text-xs text-muted-foreground">Sem foto</p>
+                  </div>
+                )}
+              </div>
+              {/* After */}
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground text-center font-medium">Agora</p>
+                {photoB ? (
+                  <div className="relative aspect-[3/4] rounded-md overflow-hidden bg-secondary">
+                    <Image
+                      src={photoB.photo_url}
+                      alt="agora"
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
+                      <p className="text-xs text-white font-medium text-center">
+                        {format(parseISO(photoB.taken_at), "dd MMM yy", { locale: ptBR })}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="aspect-[3/4] rounded-md bg-secondary flex items-center justify-center">
+                    <p className="text-xs text-muted-foreground">Sem foto</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Photo selectors */}
+            {filtered.length > 1 && (
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-1">Foto — Antes</p>
+                    <select
+                      value={compareA ?? ''}
+                      onChange={(e) => setCompareA(e.target.value || null)}
+                      className="w-full text-xs bg-secondary border border-border rounded px-2 py-1"
+                    >
+                      <option value="">Mais antiga</option>
+                      {filtered.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {format(parseISO(p.taken_at), "dd MMM yy", { locale: ptBR })}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-1">Foto — Agora</p>
+                    <select
+                      value={compareB ?? ''}
+                      onChange={(e) => setCompareB(e.target.value || null)}
+                      className="w-full text-xs bg-secondary border border-border rounded px-2 py-1"
+                    >
+                      <option value="">Mais recente</option>
+                      {filtered.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {format(parseISO(p.taken_at), "dd MMM yy", { locale: ptBR })}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </CardContent>

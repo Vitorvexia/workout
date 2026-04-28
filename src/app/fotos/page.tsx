@@ -8,7 +8,6 @@ export default async function FotosPage() {
     .from('progress_photos')
     .select('*')
     .order('taken_at', { ascending: false })
-    .limit(30)
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
