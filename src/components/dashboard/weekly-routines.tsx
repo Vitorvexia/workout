@@ -16,22 +16,45 @@ export function WeeklyRoutines({
   workoutAllDates, supplementAllDates,
 }: Props) {
   const [chartSupplement, setChartSupplement] = useState(supplementAllDates)
+  const [chartWorkout, setChartWorkout] = useState(workoutAllDates)
 
-  async function handleSupplementToggle(date: string) {
-    await fetch('/api/suplementos-day', {
+  async function handleAcademiaToggle(date: string) {
+    const res = await fetch('/api/academia-day', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ logged_at: date }),
     })
-    setChartSupplement((prev) => [...new Set([...prev, date])].sort())
+    if (!res.ok) throw new Error('failed')
+    setChartWorkout((prev) => [...new Set([...prev, date])].sort())
   }
 
-  async function handleSupplementUnmark(date: string) {
-    await fetch('/api/suplementos-day', {
+  async function handleAcademiaUnmark(date: string) {
+    const res = await fetch('/api/academia-day', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ logged_at: date }),
     })
+    if (!res.ok) throw new Error('failed')
+    setChartWorkout((prev) => prev.filter((d) => d !== date))
+  }
+
+  async function handleSupplementToggle(date: string) {
+    const res = await fetch('/api/suplementos-day', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ logged_at: date }),
+    })
+    if (!res.ok) throw new Error('failed')
+    setChartSupplement((prev) => [...new Set([...prev, date])].sort())
+  }
+
+  async function handleSupplementUnmark(date: string) {
+    const res = await fetch('/api/suplementos-day', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ logged_at: date }),
+    })
+    if (!res.ok) throw new Error('failed')
     setChartSupplement((prev) => prev.filter((d) => d !== date))
   }
 
@@ -41,7 +64,8 @@ export function WeeklyRoutines({
         <RoutineTracker
           title="Academia"
           loggedDates={workoutDates}
-          readOnly
+          onToggle={handleAcademiaToggle}
+          onUnmark={handleAcademiaUnmark}
         />
         <RoutineTracker
           title="Alimentação + Suplementos"
@@ -51,7 +75,7 @@ export function WeeklyRoutines({
         />
       </div>
       <RoutineChart
-        workoutDates={workoutAllDates}
+        workoutDates={chartWorkout}
         supplementDates={chartSupplement}
       />
     </div>

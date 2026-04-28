@@ -34,7 +34,7 @@ export default async function DashboardPage() {
     todaySupplements,
     todayFicha,
   ] = await Promise.all([
-    safeQuery<WeightLog>(supabase.from('weight_logs').select('*').order('logged_at', { ascending: true }).limit(120)),
+    safeQuery<WeightLog>(supabase.from('weight_logs').select('*').order('logged_at', { ascending: true }).order('created_at', { ascending: true }).limit(120)),
     safeQuery<{ completed_at: string }>(supabase.from('ficha_completions').select('completed_at').gte('completed_at', weekStart)),
     safeQuery<{ logged_at: string }>(supabase.from('supplement_weekly').select('logged_at').gte('logged_at', weekStart)),
     safeQuery<{ completed_at: string }>(supabase.from('ficha_completions').select('completed_at').order('completed_at', { ascending: true })),

@@ -35,20 +35,20 @@ export function RoutineTracker({ title, loggedDates, onToggle, onUnmark, readOnl
     setLoading(date)
 
     if (logged.has(date)) {
-      // unmark
-      if (onUnmark) {
-        await onUnmark(date)
-        setLogged((prev) => {
-          const next = new Set(prev)
-          next.delete(date)
-          return next
-        })
+      // optimistic unmark
+      setLogged((prev) => { const n = new Set(prev); n.delete(date); return n })
+      try {
+        if (onUnmark) await onUnmark(date)
+      } catch {
+        setLogged((prev) => new Set([...prev, date])) // revert
       }
     } else {
-      // mark
-      if (onToggle) {
-        await onToggle(date)
-        setLogged((prev) => new Set([...prev, date]))
+      // optimistic mark
+      setLogged((prev) => new Set([...prev, date]))
+      try {
+        if (onToggle) await onToggle(date)
+      } catch {
+        setLogged((prev) => { const n = new Set(prev); n.delete(date); return n }) // revert
       }
     }
 
@@ -110,11 +110,6 @@ export function RoutineTracker({ title, loggedDates, onToggle, onUnmark, readOnl
             )
           })}
         </div>
-        {readOnly && (
-          <p className="text-[10px] text-muted-foreground/50 text-center mt-2">
-            Automático via Ficha de Treino
-          </p>
-        )}
       </CardContent>
     </Card>
   )
