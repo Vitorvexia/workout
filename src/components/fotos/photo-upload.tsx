@@ -58,7 +58,7 @@ export function PhotoUpload({ onUploaded }: Props) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <Label className="text-xs">Ângulo</Label>
-            <Select value={angle} onValueChange={setAngle}>
+            <Select value={angle} onValueChange={(v) => setAngle(v ?? '')}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecionar ângulo" />
               </SelectTrigger>

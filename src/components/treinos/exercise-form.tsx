@@ -67,7 +67,7 @@ export function ExerciseForm({ exercises, onLogged }: Props) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <Label className="text-xs">Exercício</Label>
-            <Select value={exerciseId} onValueChange={setExerciseId}>
+            <Select value={exerciseId} onValueChange={(v) => setExerciseId(v ?? '')}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecionar exercício" />
               </SelectTrigger>
