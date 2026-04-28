@@ -14,9 +14,9 @@ import { WeightLog } from '@/lib/types'
 import { format, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-type Props = { logs: WeightLog[] }
+type Props = { logs: WeightLog[]; target: number }
 
-export function WeightChart({ logs }: Props) {
+export function WeightChart({ logs, target }: Props) {
   const data = logs.map((l) => ({
     date: format(parseISO(l.logged_at), 'dd/MM', { locale: ptBR }),
     peso: Number(l.weight_kg),
@@ -59,10 +59,10 @@ export function WeightChart({ logs }: Props) {
                 }}
               />
               <ReferenceLine
-                y={68}
+                y={target}
                 stroke="var(--muted-foreground)"
                 strokeDasharray="3 3"
-                label={{ value: 'Meta', fontSize: 10, fill: 'var(--muted-foreground)' }}
+                label={{ value: `Meta ${target}kg`, fontSize: 10, fill: 'var(--muted-foreground)' }}
               />
               <Line
                 type="monotone"

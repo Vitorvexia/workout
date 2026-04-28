@@ -11,7 +11,11 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('weight_logs')
-    .insert({ weight_kg: Number(weight_kg), notes, logged_at })
+    .insert({
+      weight_kg: Number(weight_kg),
+      notes: notes ?? null,
+      logged_at: logged_at ?? new Date().toISOString().split('T')[0],
+    })
     .select()
     .single()
 
@@ -24,7 +28,7 @@ export async function GET() {
     .from('weight_logs')
     .select('*')
     .order('logged_at', { ascending: true })
-    .limit(60)
+    .limit(120)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)

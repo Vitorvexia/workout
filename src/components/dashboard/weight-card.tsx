@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,50 +9,49 @@ import { WeightSlider } from './weight-slider'
 import { Pencil, Check, X } from 'lucide-react'
 
 const INITIAL_WEIGHT = 58
-const DEFAULT_TARGET = 68
-const LS_KEY = 'workout_target_weight'
 
 type Props = {
   latest: WeightLog | null
+  target: number
   onAdded: (newLog: WeightLog) => void
+  onTargetChange: (t: number) => void
 }
 
-export function WeightCard({ latest, onAdded }: Props) {
+export function WeightCard({ latest, target, onAdded, onTargetChange }: Props) {
   const [weight, setWeight] = useState('')
   const [loading, setLoading] = useState(false)
-  const [target, setTarget] = useState(DEFAULT_TARGET)
   const [editingTarget, setEditingTarget] = useState(false)
   const [targetInput, setTargetInput] = useState('')
-
-  useEffect(() => {
-    const stored = localStorage.getItem(LS_KEY)
-    if (stored) setTarget(parseFloat(stored))
-  }, [])
 
   const current = latest ? Number(latest.weight_kg) : INITIAL_WEIGHT
 
   function saveTarget() {
     const val = parseFloat(targetInput)
     if (!isNaN(val) && val > current) {
-      setTarget(val)
-      localStorage.setItem(LS_KEY, String(val))
+      onTargetChange(val)
     }
     setEditingTarget(false)
+  }
+
+  async function logWeight(w: number): Promise<void> {
+    const res = await fetch('/api/peso', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ weight_kg: w }),
+    })
+    if (res.ok) {
+      const newLog: WeightLog = await res.json()
+      onAdded(newLog)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!weight) return
     setLoading(true)
-    const res = await fetch('/api/peso', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ weight_kg: parseFloat(weight) }),
-    })
-    const newLog: WeightLog = await res.json()
+    await logWeight(parseFloat(weight))
     setWeight('')
     setLoading(false)
-    if (res.ok) onAdded(newLog)
   }
 
   return (
@@ -104,7 +103,12 @@ export function WeightCard({ latest, onAdded }: Props) {
           <span className="text-xl text-muted-foreground mb-1">kg</span>
         </div>
 
-        <WeightSlider min={INITIAL_WEIGHT} max={target} current={current} />
+        <WeightSlider
+          min={INITIAL_WEIGHT}
+          max={target}
+          current={current}
+          onLog={logWeight}
+        />
 
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Input

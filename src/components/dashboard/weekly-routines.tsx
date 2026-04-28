@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { RoutineTracker } from './routine-tracker'
 import { RoutineChart } from './routine-chart'
 
@@ -16,12 +17,17 @@ export function WeeklyRoutines({
   postureDates, workoutDates, supplementDates,
   postureAllDates, workoutAllDates, supplementAllDates,
 }: Props) {
+  const [chartPosture, setChartPosture] = useState(postureAllDates)
+  const [chartWorkout, setChartWorkout] = useState(workoutAllDates)
+  const [chartSupplement, setChartSupplement] = useState(supplementAllDates)
+
   async function handlePosturaToggle(date: string) {
     await fetch('/api/postura-checklist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ logged_at: date, exercise_1: true, exercise_2: true, exercise_3: true, exercise_4: true, exercise_5: true }),
     })
+    setChartPosture((prev) => [...new Set([...prev, date])].sort())
   }
 
   async function handleWorkoutToggle(date: string) {
@@ -30,6 +36,7 @@ export function WeeklyRoutines({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ logged_at: date }),
     })
+    setChartWorkout((prev) => [...new Set([...prev, date])].sort())
   }
 
   async function handleSupplementToggle(date: string) {
@@ -38,6 +45,7 @@ export function WeeklyRoutines({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ logged_at: date }),
     })
+    setChartSupplement((prev) => [...new Set([...prev, date])].sort())
   }
 
   return (
@@ -48,9 +56,9 @@ export function WeeklyRoutines({
         <RoutineTracker title="Suplementos" loggedDates={supplementDates} onToggle={handleSupplementToggle} />
       </div>
       <RoutineChart
-        postureDates={postureAllDates}
-        workoutDates={workoutAllDates}
-        supplementDates={supplementAllDates}
+        postureDates={chartPosture}
+        workoutDates={chartWorkout}
+        supplementDates={chartSupplement}
       />
     </div>
   )
