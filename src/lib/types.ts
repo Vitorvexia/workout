@@ -33,20 +33,31 @@ export type ProgressPhoto = {
   created_at: string
 }
 
-export type PostureLog = {
+// Posture checklist (replaces PostureLog)
+export type PostureChecklist = {
   id: string
-  did_exercises: boolean
-  back_pain_level: number
   logged_at: string
-  notes: string | null
+  exercise_1: boolean
+  exercise_2: boolean
+  exercise_3: boolean
+  exercise_4: boolean
+  exercise_5: boolean
   created_at: string
 }
 
-export type SupplementLog = {
+// Supplement weekly (per-day, per-supplement with count)
+export type SupplementWeekly = {
   id: string
-  took_hypercaloric: boolean
-  took_whey: boolean
-  took_creatine: boolean
   logged_at: string
+  supplement: 'creatina' | 'whey' | 'hipercalorico'
+  count: number
+  created_at: string
+}
+
+export type FichaCompletion = {
+  id: string
+  day_letter: 'A' | 'B' | 'C' | 'D' | 'E'
+  exercise_name: string
+  completed_at: string
   created_at: string
 }
