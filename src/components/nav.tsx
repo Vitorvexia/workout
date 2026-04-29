@@ -51,6 +51,7 @@ export function Nav() {
             <Link
               key={href}
               href={href}
+              prefetch={true}
               className={cn(
                 'flex-1 flex flex-col items-center justify-center gap-1 py-3 transition-colors',
                 active ? 'text-foreground' : 'text-muted-foreground'
