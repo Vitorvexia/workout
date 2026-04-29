@@ -136,7 +136,7 @@ function CheckRow({
     <button
       onClick={onToggle}
       className={cn(
-        'flex items-center gap-2 w-full text-left rounded-md px-2 py-1.5 transition-colors text-sm',
+        'flex items-center gap-2 w-full text-left rounded-md px-3 py-2.5 transition-colors text-sm',
         done
           ? variant === 'optional'
             ? 'text-yellow-300/90 bg-yellow-500/10'

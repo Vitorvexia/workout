@@ -139,7 +139,7 @@ function WeightInput({ exercise }: { exercise: string }) {
   const isProgress = history.last !== null && parseFloat(value) > history.last
 
   return (
-    <div className="flex items-center gap-2 mt-1.5" onClick={(e) => e.stopPropagation()}>
+    <div className="flex items-center gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
       <Input
         type="number"
         step="0.5"
@@ -148,9 +148,10 @@ function WeightInput({ exercise }: { exercise: string }) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onBlur={handleBlur}
-        className="h-6 w-16 text-xs px-2"
+        className="h-9 w-20 text-sm px-2"
+        inputMode="decimal"
       />
-      <div className="flex items-center gap-1.5 text-[10px]">
+      <div className="flex items-center gap-1.5 text-xs">
         {history.last !== null && (
           <span className="text-muted-foreground">último: {history.last}kg</span>
         )}
@@ -159,7 +160,7 @@ function WeightInput({ exercise }: { exercise: string }) {
         )}
         {isProgress && (
           <span className="text-green-400 flex items-center gap-0.5">
-            <TrendingUp className="w-3 h-3" /> PR
+            <TrendingUp className="w-3.5 h-3.5" /> PR
           </span>
         )}
         {isRecord && !isProgress && (
@@ -227,7 +228,7 @@ export function FichaTreino({ todayCompletions }: Props) {
               <button
                 key={key}
                 onClick={() => setActiveDay(key)}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   activeDay === key
                     ? 'bg-foreground text-background'
                     : allDone
@@ -255,7 +256,7 @@ export function FichaTreino({ todayCompletions }: Props) {
             return (
               <div
                 key={exercise}
-                className={`w-full px-3 py-2.5 rounded-lg border transition-colors ${
+                className={`w-full px-3 py-3 rounded-lg border transition-colors ${
                   done
                     ? 'border-foreground/30 bg-foreground/5'
                     : 'border-border hover:border-foreground/30'
